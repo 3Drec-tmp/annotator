@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <style type="text/css">
+        .my_vp_class {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+        }
+
+        .my_vp_class .vp_class_tooltip {
+            visibility: hidden;
+            width: 120px;
+            object-fit: contain;
+            background-color: black;
+            color: #fff;
+            text-align: center;
+            border-radius: 3px;
+            padding: 5px 5px;
+            position: absolute;
+            z-index: 1;
+            top: -5px;
+            left: 110%;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .my_vp_class:hover .vp_class_tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    </br></br></br>
+    <button class="my_vp_class">
+        Yeh this is my class button
+        <img class="vp_class_tooltip" src="./img01.jpg" />
+    </button>
+
+</body>
+</html>

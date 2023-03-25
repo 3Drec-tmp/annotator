@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="./fabric.min.js"></script>
+    <script src="./jquery-3.5.1.min.js"></script>
+    <script src="./vp-annotate.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function (event) {
+            var anotation_tool = new AnotationCanvas('canvas_id', './00001.jpg', 1920);
+            anotation_tool.init();
+        });
+    </script>
+
+    <style type="text/css">
+        .anot_class {
+            float: left;
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas_id" style="border:1px solid black;"></canvas>
+
+    <div>
+        <h1>Anotation classes</h1>
+        <p>1) Select the class</p>
+        <p>2) Anotate the object on the image</p>
+        <p>2a) After start editing controll points, new controll points are added to closest line segment</p>
+        <p>2b) You can delete the points by Backspace or Delete in the order they were added</p>
+        <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
+        <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
+        <p>5) Switch between classes by pressing "Tab" on keyboard</p>
+
+
+        <div id="anot_class_000" style="background-color:red" class="anot_class">&nbsp;</div>
+        <div id="anot_class_001" style="background-color:blue" class="anot_class">&nbsp;</div>
+        <div id="anot_class_002" style="background-color:green" class="anot_class">&nbsp;</div>
+        <div id="anot_class_003" style="background-color:silver" class="anot_class">&nbsp;</div>
+        <div id="anot_class_004" style="background-color:yellow" class="anot_class">&nbsp;</div>
+    </div>
+
+
+
+</body>
+</html>
