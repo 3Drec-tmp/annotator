@@ -3,14 +3,28 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title></title>
+
+    <link rel="stylesheet" href="style.css">
+    <title>FVApp Annotator</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
     <script src="./fabric.min.js"></script>
     <script src="./jquery-3.5.1.min.js"></script>
     <script src="./fv-annotate.js"></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function (event) {
-            var anotation_tool = new AnotationCanvas('canvas_id', './00001.jpg', 1920);
+            var anotation_tool = new AnotationCanvas('canvas_main', './00001.jpg', 820);
             anotation_tool.init();
+            const fileSelector = document.getElementById("file-selector");
+            fileSelector.addEventListener('change', (event) => {
+                const fileList = event.target.files;
+                console.log(fileList);
+        });
         });
     </script>
 
@@ -25,25 +39,41 @@
 </head>
 <body>
 
-    <canvas id="canvas_id" style="border:1px solid black;"></canvas>
-
-    <div>
-        <h1>Anotation classes</h1>
-        <p>1) Select the class</p>
-        <p>2) Anotate the object on the image</p>
-        <p>2a) After start editing controll points, new controll points are added to closest line segment</p>
-        <p>2b) You can delete the points by Backspace or Delete in the order they were added</p>
-        <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
-        <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
-        <p>5) Switch between classes by pressing "Tab" on keyboard</p>
-
-
-        <div id="anot_class_000" style="background-color:red" class="anot_class">&nbsp;</div>
-        <div id="anot_class_001" style="background-color:blue" class="anot_class">&nbsp;</div>
-        <div id="anot_class_002" style="background-color:green" class="anot_class">&nbsp;</div>
-        <div id="anot_class_003" style="background-color:silver" class="anot_class">&nbsp;</div>
-        <div id="anot_class_004" style="background-color:yellow" class="anot_class">&nbsp;</div>
+    <div class="header">
+        <h2>Annotator for FVApp</h2>
+        <h4>If any problems occur, contact @fel.cvut.cz.</h4>
     </div>
+
+    <div class="content">
+        <div class="navigation">
+                <h3>Image loading</h3>
+                <div class="form-group">
+                    <label for="file-selector">Select image:</label>
+                    <input type="file" id="file-selector" name="file-selector" accept="image/*">
+                </div>
+
+                <h3>Anotation steps</h3>
+                <p>1) Select the class</p>
+                <p>2) Anotate the object on the image</p>
+                <p>2a) After start editing controll points, new controll points are added to closest line segment</p>
+                <p>2b) You can delete the points by Backspace or Delete in the order they were added</p>
+                <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
+                <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
+                <p>5) Switch between classes by pressing "Tab" on keyboard</p>
+        
+        
+                <div id="anot_class_000" style="background-color:red" class="anot_class">&nbsp;</div>
+                <div id="anot_class_001" style="background-color:blue" class="anot_class">&nbsp;</div>
+                <div id="anot_class_002" style="background-color:green" class="anot_class">&nbsp;</div>
+                <div id="anot_class_003" style="background-color:silver" class="anot_class">&nbsp;</div>
+                <div id="anot_class_004" style="background-color:yellow" class="anot_class">&nbsp;</div>
+        </div>
+        <div class="canvases">
+            <canvas id="canvas_main" style="border:1px solid black;"></canvas>
+            <canvas id="canvas_sat" style="border:1px solid black;"></canvas>
+        </div>
+    </div>  
+
 
 
 
