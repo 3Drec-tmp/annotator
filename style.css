@@ -32,3 +32,12 @@ body{
     border-radius: 20px;
     padding: 2rem;
 }
+
+.image-list {
+    heigh: 400px;
+}
+
+.image-list-content{
+    display: flex;
+    flex-direction: column;
+}

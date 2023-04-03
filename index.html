@@ -9,6 +9,9 @@
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
 
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    
     <!-- Latest compiled JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
@@ -17,15 +20,57 @@
     <script src="./fv-annotate.js"></script>
 
     <script>
+        let imagesArray = []
+        var anotation_tool = null;
+
+        function sendToCanvas(index) {
+            console.log(imagesArray[index])
+            anotation_tool.load_image(URL.createObjectURL(imagesArray[index]))
+            const imgtest = document.getElementById("img-test");
+            imgtest.innerHTML = `<img src="${URL.createObjectURL(imagesArray[index])}" alt="image">`
+        }
+
+        function deleteImage(index) {
+            imagesArray.splice(index, 1)
+            displayImages()
+        }
+
+        function displayImageList(output) {
+            let images = ""
+            imagesArray.forEach((image, index) => {
+                images += `<div>
+                            <button type="button" class="btn btn-outline-dark btn-small" onclick="sendToCanvas(${index})">
+                                "${image.name}"
+                            </button>
+                            
+                            </div>`
+                            //<span onclick="deleteImage(${index})">&times;</span>
+                            // <img src="${URL.createObjectURL(image)}" alt="image">
+                            // 
+            })
+            output.innerHTML = images
+        }
+
         document.addEventListener("DOMContentLoaded", function (event) {
-            var anotation_tool = new AnotationCanvas('canvas_main', './00001.jpg', 820);
+            anotation_tool = new AnotationCanvas('canvas_main', './00001.jpg', 820);
             anotation_tool.init();
+
             const fileSelector = document.getElementById("file-selector");
+            const imageList = document.getElementsByClassName("image-list-content");
+
+            console.log(imageList);
             fileSelector.addEventListener('change', (event) => {
+                
                 const fileList = event.target.files;
                 console.log(fileList);
+                for (let i = 0; i < fileList.length; i++) {
+                    imagesArray.push(fileList[i])
+                }
+                displayImageList(imageList[0])
+            });
+
         });
-        });
+        
     </script>
 
     <style type="text/css">
@@ -41,7 +86,7 @@
 
     <div class="header">
         <h2>Annotator for FVApp</h2>
-        <h4>If any problems occur, contact @fel.cvut.cz.</h4>
+        <p>If any problems occur, contact @fel.cvut.cz.</p>
     </div>
 
     <div class="content">
@@ -49,7 +94,16 @@
                 <h3>Image loading</h3>
                 <div class="form-group">
                     <label for="file-selector">Select image:</label>
-                    <input type="file" id="file-selector" name="file-selector" accept="image/*">
+                    <input type="file" multiple id="file-selector" name="file-selector" accept="image/*">
+                </div>
+                <div class="image-list">
+                    <div>
+                        <h4>Image list</h4>
+                        <p> Click on image in order to open it in canvas.</p>
+                    </div>
+                    <div class="image-list-content">
+                        
+                    </div>
                 </div>
 
                 <h3>Anotation steps</h3>
@@ -71,6 +125,7 @@
         <div class="canvases">
             <canvas id="canvas_main" style="border:1px solid black;"></canvas>
             <canvas id="canvas_sat" style="border:1px solid black;"></canvas>
+            <div id="img-test"></div>
         </div>
     </div>  
 

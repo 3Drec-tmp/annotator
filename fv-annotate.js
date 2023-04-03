@@ -194,10 +194,16 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
       }
     });
   };
+  this.load_image = function (img_path) {
+    this._img_path = img_path;
+    this.init_img();
+    console.log("load image", img_path);
+  };
 
   this.init_img = function () {
     var at = this;
-    fabric.util.loadImage(img_path, function (img) {
+    fabric.util.loadImage(this._img_path, function (img) {
+      console.log(img);
       at._img = new fabric.Image(img);
       at._canvas.add(at._img);
       at._canvas.moveTo(at._img, 0);
