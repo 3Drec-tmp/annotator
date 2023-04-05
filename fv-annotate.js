@@ -196,6 +196,7 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
   };
   this.load_image = function (img_path) {
     this._img_path = img_path;
+    this._canvas.dispose();
     this.init_img();
     console.log("load image", img_path);
   };

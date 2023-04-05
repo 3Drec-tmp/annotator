@@ -21,13 +21,20 @@
 
     <script>
         let imagesArray = []
+        let canvasesArray = []
+        let annotationTools = []
         var anotation_tool = null;
 
         function sendToCanvas(index) {
             console.log(imagesArray[index])
-            anotation_tool.load_image(URL.createObjectURL(imagesArray[index]))
-            const imgtest = document.getElementById("img-test");
-            imgtest.innerHTML = `<img src="${URL.createObjectURL(imagesArray[index])}" alt="image">`
+            url = URL.createObjectURL(imagesArray[index])
+
+            container = document.getElementById("canvas_main");
+            container.innerHTML = '';
+            container.innerHTML = `<canvas id="canvas_img" style="border:1px solid black;"></canvas>`
+
+            anotation_tool = new AnotationCanvas('canvas_img', URL.createObjectURL(imagesArray[index]), 820);
+            anotation_tool.init();
         }
 
         function deleteImage(index) {
@@ -44,17 +51,16 @@
                             </button>
                             
                             </div>`
-                            //<span onclick="deleteImage(${index})">&times;</span>
-                            // <img src="${URL.createObjectURL(image)}" alt="image">
-                            // 
             })
             output.innerHTML = images
         }
 
-        document.addEventListener("DOMContentLoaded", function (event) {
-            anotation_tool = new AnotationCanvas('canvas_main', './00001.jpg', 820);
-            anotation_tool.init();
+        function requestSat() {
+            console.log("requesting sat image")
+            //anotation_tool.requestSatImage()
+        }
 
+        document.addEventListener("DOMContentLoaded", function (event) {
             const fileSelector = document.getElementById("file-selector");
             const imageList = document.getElementsByClassName("image-list-content");
 
@@ -65,6 +71,7 @@
                 console.log(fileList);
                 for (let i = 0; i < fileList.length; i++) {
                     imagesArray.push(fileList[i])
+                
                 }
                 displayImageList(imageList[0])
             });
@@ -99,11 +106,18 @@
                 <div class="image-list">
                     <div>
                         <h4>Image list</h4>
-                        <p> Click on image in order to open it in canvas.</p>
+                        <p> Then click on image in order to open it in canvas.</p>
                     </div>
                     <div class="image-list-content">
                         
                     </div>
+                </div>
+                <div class="sat">
+                    <h3>Satellite image</h3>
+                    <p>Request new satellite image corresponding to image on canvas</p>
+                    <button type="button" class="btn btn-primary" onclick=requestSat()>
+                        Get image
+                    </button>
                 </div>
 
                 <h3>Anotation steps</h3>
@@ -123,8 +137,12 @@
                 <div id="anot_class_004" style="background-color:yellow" class="anot_class">&nbsp;</div>
         </div>
         <div class="canvases">
-            <canvas id="canvas_main" style="border:1px solid black;"></canvas>
-            <canvas id="canvas_sat" style="border:1px solid black;"></canvas>
+            <div id="canvas_main">
+                <canvas id="canvas_img" style="border:1px solid black;"></canvas>
+            </div>
+            <div id="canvas_sec">
+                <canvas id="canvas_sat" style="border:1px solid black;"></canvas>
+            </div>
             <div id="img-test"></div>
         </div>
     </div>  
