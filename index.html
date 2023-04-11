@@ -36,7 +36,7 @@
             container.innerHTML = '';
             container.innerHTML = `<canvas id="canvas_img" style="border:1px solid black;"></canvas>`
 
-            anotation_tool = new AnotationCanvas('canvas_img', URL.createObjectURL(imagesArray[index]), 820);
+            anotation_tool = new AnotationCanvas('canvas_img', 'zoom_win', URL.createObjectURL(imagesArray[index]), 820);
             anotation_tool.init();
 
             // if (satellite_tool != null) {
@@ -199,8 +199,10 @@
         </div>
         <div class="canvases">
             <div id="canvas_main">
-                <canvas id="canvas_img" style="border:1px solid black;"></canvas>
+                <canvas id="canvas_img" style="border:1px solid black;"></canvas></canvas>
             </div>
+
+            <canvas id="zoom_win" width="400" height="200" style="position:absolute; top:0; left:0;border:1px solid black;">
 
             <div id="canvas_sec">
                 <canvas id="canvas_sat" style="border:1px solid black;"></canvas>

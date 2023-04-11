@@ -118,9 +118,13 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
   };
 }
 
-function AnotationCanvas(canvas_id, img_path, img_width) {
+function AnotationCanvas(canvas_id, zoom_id, img_path, img_width) {
   this._canvas_id = canvas_id;
   this._canvas = null;
+  this._zoom_id = zoom_id;
+  console.log(zoom_id);
+  this._zoom = null;
+
   this._img_id = null;
   this._img = null;
   this._img_path = img_path;
@@ -139,6 +143,31 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
       return;
     }
     this._canvas = this.__canvas = new fabric.Canvas(canvas_id);
+
+    if (document.getElementById(this._zoom_id)) {
+      console.log("zoom");
+      this._zoom = document.getElementById(this._zoom_id);
+      zoomCtx = this._zoom.getContext("2d");
+
+      c = document.getElementById(this._canvas_id);
+      // onmousemove
+      this._canvas.on("mousemove", function (e) {
+        console.log(e);
+        zoomCtx.fillStyle = "white";
+        //zoomCtx.clearRect(0,0, zoom.width, zoom.height);
+        //zoomCtx.fillStyle = "transparent";
+        zoomCtx.fillRect(0, 0, this._zoom.width, this._zoom.height);
+        zoomCtx.drawImage(c, e.x, e.y, 200, 100, 0, 0, 400, 200);
+        console.log(this._zoom.style);
+        this._zoom.style.top = e.pageY + 10 + "px";
+        this._zoom.style.left = e.pageX + 10 + "px";
+        this._zoom.style.display = "block";
+      });
+
+      c.addEventListener("mouseout", function () {
+        this._zoom.style.display = "none";
+      });
+    }
 
     this._img_id = Math.floor(Math.random() * 10000000);
     while (document.getElementById(this._img_id.toString())) {
