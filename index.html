@@ -21,12 +21,15 @@
 
     <script>
         let imagesArray = []
-        let canvasesArray = []
-        let annotationTools = []
         var anotation_tool = null;
+        var satellite_tool = null;
+        var active_img = null;
+        var active_sat_img = null;
 
         function sendToCanvas(index) {
             console.log(imagesArray[index])
+            active_img = imagesArray[index]
+
             url = URL.createObjectURL(imagesArray[index])
 
             container = document.getElementById("canvas_main");
@@ -35,11 +38,16 @@
 
             anotation_tool = new AnotationCanvas('canvas_img', URL.createObjectURL(imagesArray[index]), 820);
             anotation_tool.init();
-        }
 
-        function deleteImage(index) {
-            imagesArray.splice(index, 1)
-            displayImages()
+            // if (satellite_tool != null) {
+            //     if (confirm('Does satellite image matches?')) {
+            //     // Save it!
+            //     console.log('Thing was saved to the database.');
+            //     } else {
+            //     // Do nothing!
+            //     console.log('Thing was not saved to the database.');
+            //     }   
+            // }
         }
 
         function displayImageList(output) {
@@ -55,11 +63,64 @@
             output.innerHTML = images
         }
 
-        function requestSat() {
-            console.log("requesting sat image")
-            //anotation_tool.requestSatImage()
+
+        function deleteImage(index) {
+            imagesArray.splice(index, 1)
+            displayImagesList()
+        }
+        
+        function getCoords(image) {
+            let coords = [50.67315, 13.94149]
+            EXIF.getData(image, function () {
+                    var MetaData = EXIF.getAllTags(this);
+                    console.log(JSON.stringify(MetaData, null, "\t"));
+                }
+            );
+            return coords
         }
 
+
+        function requestSat() {
+            coords = getCoords(active_img)
+            $.ajax({
+                type: "GET",
+                url: "http://10.35.161.7:443/api/save_request",
+                data: {
+                    "lat": coords[0],
+                    "lon": coords[1],
+                    "zoom": 19,
+                },
+            }).done(function (data) {
+                data_obj = JSON.parse(data);
+                console.log(data_obj);
+                if (data_obj["status"] == "ok") {
+                    console.log("ok")
+                    container = document.getElementById("canvas_sat");
+                    container.innerHTML = '';
+                    container.innerHTML = `<canvas id="canvas_sat_img" style="border:1px solid black;"></canvas>`
+
+                    satellite_tool = new AnotationCanvas('canvas_sat_img', data_obj["url"], 820);
+                    satellite_tool.init();
+                }
+                else {
+                    alert("Error occured, try again")
+                }});
+
+        }
+
+        function sendAnnot() {
+            if (anotation_tool == null || satellite_tool == null) {
+                alert("You have to load image and satellite image first")
+            }
+            if (anotation_tool.isEmpty() || satellite_tool.isEmpty()) {
+                alert("You have to annotate image and satellite image first")
+            }
+            if (confirm('Are you sure satellite image matches and you want to send the annotations?')) {
+                // Save it!
+                console.log("sending annot");
+            }
+        }
+ 
         document.addEventListener("DOMContentLoaded", function (event) {
             const fileSelector = document.getElementById("file-selector");
             const imageList = document.getElementsByClassName("image-list-content");
@@ -140,10 +201,15 @@
             <div id="canvas_main">
                 <canvas id="canvas_img" style="border:1px solid black;"></canvas>
             </div>
+
             <div id="canvas_sec">
                 <canvas id="canvas_sat" style="border:1px solid black;"></canvas>
             </div>
-            <div id="img-test"></div>
+            <div id="send_button">
+                <button type="button" class="btn btn-dark" onclick=sendAnnot()>
+                    Send annotation
+                </button>
+            </div>
         </div>
     </div>  
 

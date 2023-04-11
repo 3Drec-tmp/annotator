@@ -129,6 +129,10 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
   this._polygons = [];
   this._active_polygon = null;
 
+  this.isEmpty = function () {
+    return this._polygons.length == 0;
+  };
+
   this.init = function () {
     if (!document.getElementById(this._canvas_id)) {
       alert("Canvas with canvas id: " + canvas_id + " does not exist.");
@@ -432,11 +436,11 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
     }
 
     console.log(JSON.stringify(data_obj));
-    $.ajax({
-      type: "POST",
-      url: "http://xxx", // 91.121.77.14:5000/dataset_segmentation_store
-      data: JSON.stringify(data_obj),
-    });
+    // $.ajax({
+    //   type: "POST",
+    //   url: "http://xxx",
+    //   data: JSON.stringify(data_obj),
+    // });
   };
 }
 
