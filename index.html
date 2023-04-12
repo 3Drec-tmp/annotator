@@ -20,6 +20,7 @@
     <script src="./fv-annotate.js"></script>
 
     <script>
+  
         let imagesArray = []
         var anotation_tool = null;
         var satellite_tool = null;
@@ -36,8 +37,9 @@
             container.innerHTML = '';
             container.innerHTML = `<canvas id="canvas_img" style="border:1px solid black;"></canvas>`
 
-            anotation_tool = new AnotationCanvas('canvas_img', 'zoom_win', URL.createObjectURL(imagesArray[index]), 820);
+            anotation_tool = new AnotationCanvas('canvas_img' , URL.createObjectURL(imagesArray[index]), 820);
             anotation_tool.init();
+            anotation_tool.init_zoom();
 
             // if (satellite_tool != null) {
             //     if (confirm('Does satellite image matches?')) {
@@ -71,29 +73,41 @@
         
         function getCoords(image) {
             let coords = [50.67315, 13.94149]
-            EXIF.getData(image, function () {
-                    var MetaData = EXIF.getAllTags(this);
-                    console.log(JSON.stringify(MetaData, null, "\t"));
-                }
-            );
+            // EXIF.getData(image, function () {
+            //         var MetaData = EXIF.getAllTags(this);
+            //         console.log(JSON.stringify(MetaData, null, "\t"));
+            //     }
+            // );
             return coords
         }
 
 
-        function requestSat() {
+        async function  requestSat() {
+            const url = "http://10.35.161.7:443/api/save_request"
             coords = getCoords(active_img)
+            // $.post("http://10.35.161.7:443/api/save_request",{
+            //         "lat": coords[0],
+            //         "lon": coords[1],
+            //         "zoom": 19,
+            //     }, function (data, status) {
+            //         console.log(data, status);
+            //     });
             $.ajax({
-                type: "GET",
                 url: "http://10.35.161.7:443/api/save_request",
+                type: "POST",
+                crossDomain: true,
+                CORS:true,
+                headers: {
+                'Access-Control-Allow-Origin': '*',
+                },
                 data: {
                     "lat": coords[0],
                     "lon": coords[1],
                     "zoom": 19,
                 },
-            }).done(function (data) {
-                data_obj = JSON.parse(data);
-                console.log(data_obj);
-                if (data_obj["status"] == "ok") {
+                success: function (data) {
+                    data_obj = JSON.parse(data);
+                    console.log(data_obj);
                     console.log("ok")
                     container = document.getElementById("canvas_sat");
                     container.innerHTML = '';
@@ -101,10 +115,38 @@
 
                     satellite_tool = new AnotationCanvas('canvas_sat_img', data_obj["url"], 820);
                     satellite_tool.init();
-                }
-                else {
+                }, 
+                error: function (data) {
+                    console.log(data);
                     alert("Error occured, try again")
-                }});
+                    
+                }
+            });
+            // const response = await 
+            fetch(url, {
+                method: "POST", // *GET, POST, PUT, DELETE, etc.
+                mode: "no-cors", // no-cors, *cors, same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                //credentials: "same-origin", // include, *same-origin, omit
+                headers: {
+                "Content-Type": "application/json",
+                //'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                redirect: "follow", // manual, *follow, error
+                //referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                body: JSON.stringify({
+                    "lat": coords[0],
+                    "lon": coords[1],
+                    "zoom": 19,
+                },
+                ), // body data type must match "Content-Type" header
+            }).then(response => response.json()).then(data => {
+                console.log(data);
+            }).catch(error => {
+                console.log(error);
+            });
+            // console.log(response.json())
+            // return response.json();
 
         }
 
@@ -122,6 +164,7 @@
         }
  
         document.addEventListener("DOMContentLoaded", function (event) {
+     
             const fileSelector = document.getElementById("file-selector");
             const imageList = document.getElementsByClassName("image-list-content");
 
@@ -199,10 +242,10 @@
         </div>
         <div class="canvases">
             <div id="canvas_main">
-                <canvas id="canvas_img" style="border:1px solid black;"></canvas></canvas>
+                <canvas id="canvas_img" style="border:1px solid black;"></canvas>
             </div>
 
-            <canvas id="zoom_win" width="400" height="200" style="position:absolute; top:0; left:0;border:1px solid black;">
+            <canvas id="zoom_win" width="400" height="200" style="display:none;position:absolute;top:0;left:0;border:1px solid black;"></canvas>
 
             <div id="canvas_sec">
                 <canvas id="canvas_sat" style="border:1px solid black;"></canvas>

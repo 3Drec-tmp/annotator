@@ -118,13 +118,9 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
   };
 }
 
-function AnotationCanvas(canvas_id, zoom_id, img_path, img_width) {
+function AnotationCanvas(canvas_id, img_path, img_width) {
   this._canvas_id = canvas_id;
   this._canvas = null;
-  this._zoom_id = zoom_id;
-  console.log(zoom_id);
-  this._zoom = null;
-
   this._img_id = null;
   this._img = null;
   this._img_path = img_path;
@@ -137,37 +133,13 @@ function AnotationCanvas(canvas_id, zoom_id, img_path, img_width) {
     return this._polygons.length == 0;
   };
 
+  // init canvas
   this.init = function () {
     if (!document.getElementById(this._canvas_id)) {
       alert("Canvas with canvas id: " + canvas_id + " does not exist.");
       return;
     }
     this._canvas = this.__canvas = new fabric.Canvas(canvas_id);
-
-    if (document.getElementById(this._zoom_id)) {
-      console.log("zoom");
-      this._zoom = document.getElementById(this._zoom_id);
-      zoomCtx = this._zoom.getContext("2d");
-
-      c = document.getElementById(this._canvas_id);
-      // onmousemove
-      this._canvas.on("mousemove", function (e) {
-        console.log(e);
-        zoomCtx.fillStyle = "white";
-        //zoomCtx.clearRect(0,0, zoom.width, zoom.height);
-        //zoomCtx.fillStyle = "transparent";
-        zoomCtx.fillRect(0, 0, this._zoom.width, this._zoom.height);
-        zoomCtx.drawImage(c, e.x, e.y, 200, 100, 0, 0, 400, 200);
-        console.log(this._zoom.style);
-        this._zoom.style.top = e.pageY + 10 + "px";
-        this._zoom.style.left = e.pageX + 10 + "px";
-        this._zoom.style.display = "block";
-      });
-
-      c.addEventListener("mouseout", function () {
-        this._zoom.style.display = "none";
-      });
-    }
 
     this._img_id = Math.floor(Math.random() * 10000000);
     while (document.getElementById(this._img_id.toString())) {
@@ -193,6 +165,87 @@ function AnotationCanvas(canvas_id, zoom_id, img_path, img_width) {
         };
       }
     }
+
+    // init magnifier canvas
+    this.init_zoom = function () {
+      /// Get the main canvas element
+      var mainCanvas = document.getElementsByClassName("upper-canvas")[0];
+
+      // Create a new canvas element for the magnifying glass
+      var magnifyingGlassCanvas = document.getElementById("zoom_win");
+      magnifyingGlassCanvas.id = "magnifyingGlassCanvas";
+      magnifyingGlassCanvas.width = 200; // Set the width of the magnifying glass
+      magnifyingGlassCanvas.height = 200; // Set the height of the magnifying glass
+      magnifyingGlassCanvas.style.position = "absolute"; // Set the position of the magnifying glass
+      magnifyingGlassCanvas.style.display = "none"; // Hide the magnifying glass initially
+
+      // Add an event listener to the main canvas to show the magnifying glass on mouseover
+      mainCanvas.addEventListener("mouseover", function (event) {
+        magnifyingGlassCanvas.style.display = "block";
+      });
+
+      // Add an event listener to the main canvas to hide the magnifying glass on mouseout
+      mainCanvas.addEventListener("mouseout", function (event) {
+        magnifyingGlassCanvas.style.display = "none";
+      });
+
+      // Add an event listener to the main canvas to update the magnifying glass on mousemove
+      mainCanvas.addEventListener("mousemove", function (event) {
+        // Get the position of the mouse cursor
+        var crossHairSzie = 60;
+        var x = event.pageX - this.offsetLeft;
+        var y = event.pageY - this.offsetTop;
+        console.log(event);
+
+        // Get the context of the magnifying glass canvas
+        var magnifyingGlassCtx = magnifyingGlassCanvas.getContext("2d");
+
+        // Clear the magnifying glass canvas
+        magnifyingGlassCtx.clearRect(
+          0,
+          0,
+          magnifyingGlassCanvas.width,
+          magnifyingGlassCanvas.height
+        );
+
+        // Draw a portion of the main canvas onto the magnifying glass canvas
+        magnifyingGlassCtx.drawImage(
+          document.getElementsByClassName("lower-canvas")[0],
+          event.layerX - 40,
+          event.layerY - 40,
+          80,
+          80,
+          0,
+          0,
+          magnifyingGlassCanvas.width,
+          magnifyingGlassCanvas.height
+        );
+
+        // Set the position of the magnifying glass to follow the mouse cursor
+        magnifyingGlassCanvas.style.left = x + 10 + "px";
+        magnifyingGlassCanvas.style.top = y + 10 + "px";
+
+        magnifyingGlassCtx.beginPath();
+        magnifyingGlassCtx.moveTo(
+          magnifyingGlassCanvas.width / 2,
+          magnifyingGlassCanvas.height / 2 - crossHairSzie / 2
+        );
+        magnifyingGlassCtx.lineTo(
+          magnifyingGlassCanvas.width / 2,
+          magnifyingGlassCanvas.height / 2 + crossHairSzie / 2
+        );
+        magnifyingGlassCtx.moveTo(
+          magnifyingGlassCanvas.width / 2 - crossHairSzie / 2,
+          magnifyingGlassCanvas.height / 2
+        );
+        magnifyingGlassCtx.lineTo(
+          magnifyingGlassCanvas.width / 2 + crossHairSzie / 2,
+          magnifyingGlassCanvas.height / 2
+        );
+        magnifyingGlassCtx.strokeStyle = "red";
+        magnifyingGlassCtx.stroke();
+      });
+    };
 
     // onclic next
     var next_button = document.getElementById("next_img");
@@ -227,6 +280,7 @@ function AnotationCanvas(canvas_id, zoom_id, img_path, img_width) {
       }
     });
   };
+
   this.load_image = function (img_path) {
     this._img_path = img_path;
     this._canvas.dispose();
