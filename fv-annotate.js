@@ -497,7 +497,7 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
     // });
   };
 
-  this.send_annotation_to_server = function (product_id) {
+  this.get_annotation_obj = function (product_id) {
     var data_obj = {
       product_id: product_id,
       dict: [],
@@ -518,6 +518,7 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
       data_obj.dict.push({ class_id: i, values: class_anotations });
     }
 
+    return data_obj;
     console.log(JSON.stringify(data_obj));
     // $.ajax({
     //   type: "POST",

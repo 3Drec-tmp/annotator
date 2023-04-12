@@ -27,11 +27,12 @@
         var active_img = null;
         var active_sat_img = null;
 
+
+        const url = "http://147.32.71.74:443/api/save_request"
+
         function sendToCanvas(index) {
             console.log(imagesArray[index])
             active_img = imagesArray[index]
-
-            url = URL.createObjectURL(imagesArray[index])
 
             container = document.getElementById("canvas_main");
             container.innerHTML = '';
@@ -54,6 +55,7 @@
 
         function displayImageList(output) {
             let images = ""
+            
             imagesArray.forEach((image, index) => {
                 images += `<div>
                             <button type="button" class="btn btn-outline-dark btn-small" onclick="sendToCanvas(${index})">
@@ -83,18 +85,12 @@
 
 
         async function  requestSat() {
-            const url = "http://10.35.161.7:443/api/save_request"
             coords = getCoords(active_img)
-            // $.post("http://10.35.161.7:443/api/save_request",{
-            //         "lat": coords[0],
-            //         "lon": coords[1],
-            //         "zoom": 19,
-            //     }, function (data, status) {
-            //         console.log(data, status);
-            //     });
+
+            // GET REQUEST TO SERVER SAT IMAGE
             $.ajax({
-                url: "http://10.35.161.7:443/api/save_request",
-                type: "POST",
+                url: url,
+                type: "GET",
                 crossDomain: true,
                 CORS:true,
                 headers: {
@@ -109,12 +105,12 @@
                     data_obj = JSON.parse(data);
                     console.log(data_obj);
                     console.log("ok")
-                    container = document.getElementById("canvas_sat");
-                    container.innerHTML = '';
-                    container.innerHTML = `<canvas id="canvas_sat_img" style="border:1px solid black;"></canvas>`
+                    // container = document.getElementById("canvas_sat");
+                    // container.innerHTML = '';
+                    // container.innerHTML = `<canvas id="canvas_sat_img" style="border:1px solid black;"></canvas>`
 
-                    satellite_tool = new AnotationCanvas('canvas_sat_img', data_obj["url"], 820);
-                    satellite_tool.init();
+                    // satellite_tool = new AnotationCanvas('canvas_sat_img', data_obj["url"], 820);
+                    // satellite_tool.init();
                 }, 
                 error: function (data) {
                     console.log(data);
@@ -122,62 +118,78 @@
                     
                 }
             });
-            // const response = await 
-            fetch(url, {
-                method: "POST", // *GET, POST, PUT, DELETE, etc.
-                mode: "no-cors", // no-cors, *cors, same-origin
-                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-                //credentials: "same-origin", // include, *same-origin, omit
-                headers: {
-                "Content-Type": "application/json",
-                //'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                redirect: "follow", // manual, *follow, error
-                //referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-                body: JSON.stringify({
-                    "lat": coords[0],
-                    "lon": coords[1],
-                    "zoom": 19,
-                },
-                ), // body data type must match "Content-Type" header
-            }).then(response => response.json()).then(data => {
-                console.log(data);
-            }).catch(error => {
-                console.log(error);
-            });
-            // console.log(response.json())
-            // return response.json();
-
         }
 
         function sendAnnot() {
-            if (anotation_tool == null || satellite_tool == null) {
-                alert("You have to load image and satellite image first")
-            }
-            if (anotation_tool.isEmpty() || satellite_tool.isEmpty()) {
-                alert("You have to annotate image and satellite image first")
-            }
+            // if (anotation_tool == null || satellite_tool == null) {
+            //     alert("You have to load image and satellite image first")
+            // }
+            // if (anotation_tool.isEmpty() || satellite_tool.isEmpty()) {
+            //     alert("You have to annotate image and satellite image first")
+            // }
             if (confirm('Are you sure satellite image matches and you want to send the annotations?')) {
-                // Save it!
+                // POST REQUEST TO SERVER ANNOTATIONS
+                const formData = new FormData()
+                formData.append('annot', anotation_tool.get_annotation_obj())
+                formData.append('img', active_img)
+
                 console.log("sending annot");
-            }
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers:{
+                        'Access-Control-Allow-Origin': '*',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data)
+                })
+                .catch(error => {
+                    console.error(error)
+                });
+
+            //                     $.ajax({
+            //     url: url,
+            //     type: "POST",
+            //     data: {
+            //         "lat": coords[0],
+            //         "lon": coords[1],
+            //         "zoom": 19,
+            //     },
+            //     success: function (data) {
+            //         data_obj = JSON.parse(data);
+            //         console.log(data_obj);
+            //         console.log("ok")
+            //         // container = document.getElementById("canvas_sat");
+            //         // container.innerHTML = '';
+            //         // container.innerHTML = `<canvas id="canvas_sat_img" style="border:1px solid black;"></canvas>`
+
+            //         // satellite_tool = new AnotationCanvas('canvas_sat_img', data_obj["url"], 820);
+            //         // satellite_tool.init();
+            //     }, 
+            //     error: function (data) {
+            //         console.log(data);
+            //         alert("Error occured, try again")
+                    
+            //     }
+            // });
+            } 
         }
  
         document.addEventListener("DOMContentLoaded", function (event) {
      
             const fileSelector = document.getElementById("file-selector");
-            const imageList = document.getElementsByClassName("image-list-content");
+            const imageList = document.getElementsByClassName("image-list-content")[0];
 
-            console.log(imageList);
             fileSelector.addEventListener('change', (event) => {
-                
                 const fileList = event.target.files;
                 console.log(fileList);
                 for (let i = 0; i < fileList.length; i++) {
                     imagesArray.push(fileList[i])
                 
                 }
-                displayImageList(imageList[0])
+                displayImageList(imageList)
             });
 
         });
