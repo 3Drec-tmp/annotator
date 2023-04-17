@@ -88,24 +88,6 @@
             coords = getCoords(active_img)
 
             // GET REQUEST TO SERVER SAT IMAGE
-            // fetch(url, {
-            //         method: 'GET',
-            //         body:  {
-            //         "lat": coords[0],
-            //         "lon": coords[1],
-            //         "zoom": 19,
-            //         "img_name": active_img.name
-            //         },
-            //         headers:{
-            //             'Access-Control-Allow-Origin': '*',
-            //         }
-            //     })
-            //     .then(data => {
-            //         console.log(data)
-            //     })
-            //     .catch(error => {
-            //         console.error(error)
-            //     });
             $.ajax({
                 url: "http://147.32.71.74:443/api/request_satelite_image",
                 type: "GET",
@@ -125,12 +107,17 @@
                     return xhr;
                 },
                 success: function (data) {
-                    //data_obj = JSON.parse(data);
                     console.log(data);
-                    console.log("oklokoko")
+                    var overlay = document.getElementById('overlay');
+                    overlay.style.display = "block";
                     var img = document.getElementById('img');
-                    var url = window.URL || window.webkitURL;
                     img.src = URL.createObjectURL(data);
+                    $("#img").on("click", function(event) {
+                        console.log(event)
+                        var x = event.originalEvent.layerX;
+                        var y = event.originalEvent.layerY;
+                        alert("X Coordinate: " + x + " Y Coordinate: " + y);
+                    });
                     // container = document.getElementById("canvas_sat");
                     // container.innerHTML = '';
                     // container.innerHTML = `<canvas id="canvas_sat_img" style="border:1px solid black;"></canvas>`
@@ -221,6 +208,8 @@
                 displayImageList(imageList)
             });
 
+            
+
         });
         
     </script>
@@ -296,11 +285,20 @@
                     Send annotation
                 </button>
             </div>
-            <img id="img" width=100%>
+           
         </div>
     </div>  
 
+    <div id="overlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:1000;">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">
+            <h3 id="overlay_text" style="color:white">Click on the captured house.</h3>
+            <img id="img" width=100%>
+            <button type="button" class="btn btn-dark" onclick=closeOverlay()>
+                Close
+            </button>
+        </div>
 
+    </div>
 
 
 </body>
