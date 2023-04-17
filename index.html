@@ -88,23 +88,49 @@
             coords = getCoords(active_img)
 
             // GET REQUEST TO SERVER SAT IMAGE
+            // fetch(url, {
+            //         method: 'GET',
+            //         body:  {
+            //         "lat": coords[0],
+            //         "lon": coords[1],
+            //         "zoom": 19,
+            //         "img_name": active_img.name
+            //         },
+            //         headers:{
+            //             'Access-Control-Allow-Origin': '*',
+            //         }
+            //     })
+            //     .then(data => {
+            //         console.log(data)
+            //     })
+            //     .catch(error => {
+            //         console.error(error)
+            //     });
             $.ajax({
-                url: url,
+                url: "http://147.32.71.74:443/api/request_satelite_image",
                 type: "GET",
-                crossDomain: true,
                 CORS:true,
                 headers: {
-                'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Origin': '*',
                 },
                 data: {
                     "lat": coords[0],
                     "lon": coords[1],
                     "zoom": 19,
+                    "img_name": active_img.name
+                },
+                xhr:function(){// Seems like the only way to get access to the xhr object
+                    var xhr = new XMLHttpRequest();
+                    xhr.responseType= 'blob'
+                    return xhr;
                 },
                 success: function (data) {
-                    data_obj = JSON.parse(data);
-                    console.log(data_obj);
-                    console.log("ok")
+                    //data_obj = JSON.parse(data);
+                    console.log(data);
+                    console.log("oklokoko")
+                    var img = document.getElementById('img');
+                    var url = window.URL || window.webkitURL;
+                    img.src = URL.createObjectURL(data);
                     // container = document.getElementById("canvas_sat");
                     // container.innerHTML = '';
                     // container.innerHTML = `<canvas id="canvas_sat_img" style="border:1px solid black;"></canvas>`
@@ -117,6 +143,10 @@
                     alert("Error occured, try again")
                     
                 }
+            }).done(function (data) {
+                console.log(data);
+                console.log("okaa")
+
             });
         }
 
@@ -141,7 +171,6 @@
                         'Access-Control-Allow-Origin': '*',
                     }
                 })
-                .then(response => response.json())
                 .then(data => {
                     console.log(data)
                 })
@@ -267,6 +296,7 @@
                     Send annotation
                 </button>
             </div>
+            <img id="img" width=100%>
         </div>
     </div>  
 
