@@ -52,3 +52,17 @@ body{
     background-color:rgba(0,0,0,0.5);
     z-index:1000;
 }
+
+.classes_cont {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+}
+
+#zoom_win {
+    display:none;
+    position:absolute;
+    top:0;
+    left:0;
+    border:1px solid black;
+}
