@@ -18,6 +18,7 @@
     <script src="./fabric.min.js"></script>
     <script src="./jquery-3.5.1.min.js"></script>
     <script src="./fv-annotate.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
 
     <script>
   
@@ -91,14 +92,37 @@
             displayImagesList()
         }
         
-        function getCoords(image) {
-            let coords = [50.67315, 13.94149]
-            // EXIF.getData(image, function () {
-            //         var MetaData = EXIF.getAllTags(this);
-            //         console.log(JSON.stringify(MetaData, null, "\t"));
-            //     }
-            // );
-            return coords
+        function dmsToDecimal(degs, mins, secs, direction) {
+            let sign = 1;
+            if (direction == 'S' || direction == 'W') {
+                sign = -1;
+            }
+            return sign * (Math.abs(degs) + mins/60 + secs/3600);
+        }
+
+        function requestSat() {
+            if (anotation_tool == null) {
+                alert("You have to load image first")
+                return
+            }
+
+            EXIF.getData(active_img, function () {
+                    var MetaData = EXIF.getAllTags(this);
+                    console.log(JSON.stringify(MetaData, null, "\t"));
+                    if (!('GPSLatitude' in MetaData) || !('GPSLongitude' in MetaData)){
+                        alert("No location data found, cant get the satellite image.")
+                        return
+                    }
+                    var coordLat = dmsToDecimal(...MetaData['GPSLatitude'], MetaData['GPSLatitudeRef'])
+                    var coordLon = dmsToDecimal(...MetaData['GPSLongitude'], MetaData['GPSLongitudeRef'])
+                    if (!(typeof coordLat === 'undefined') && !(typeof coordLon == 'undefined')){
+                        requestDist([coordLat, coordLon])
+                    } else {
+                        alert("No location data found, cant get the satellite image.")
+                    }
+                }
+            );
+            
         }
 
         function sendSatRequest(data, success_fun){
@@ -148,9 +172,7 @@
 
         }
        
-
-        function requestSat() {
-            coords = getCoords(active_img)
+        function requestDist(coords) {
             var new_coords;
             data = {
                 "lat": coords[0],
@@ -180,9 +202,11 @@
         function sendAnnot() {
             if (anotation_tool == null || satellite_tool == null) {
                 alert("You have to load image and satellite image first")
+                return
             }
             if (anotation_tool.isEmpty() || satellite_tool.isEmpty()) {
                 alert("You have to annotate image and satellite image first")
+                return
             }
             if (confirm('Are you sure satellite image matches and you want to send the annotations?')) {
                 // POST REQUEST TO SERVER ANNOTATIONS
