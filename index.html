@@ -37,13 +37,17 @@
             container = document.getElementById("canvas_main");
             container.innerHTML = '';
             container.innerHTML = `<canvas id="canvas_img" style="border:1px solid black;"></canvas>`
+            containerz = document.getElementById("canvas_zoom");
+            containerz.innerHTML = '';
+            containerz.innerHTML = `<canvas id="zoom_win" width="400" height="200" style="display:none;position:absolute;top:0;left:0;border:1px solid black;"></canvas>
+`
 
             anotation_tool = new AnotationCanvas('canvas_img' , URL.createObjectURL(imagesArray[index]), 820);
             anotation_tool.init();
             anotation_tool.init_zoom();
 
             // if (satellite_tool != null) {
-            //     if (confirm('Does satellite image matches?')) {
+            //     if (confirm('Does satellite image matche?')) {
             //     // Save it!
             //     console.log('Thing was saved to the database.');
             //     } else {
@@ -67,6 +71,24 @@
             output.innerHTML = images
         }
 
+        function pixelToLatLon(zoomLevel, startLat, startLon, dxPixels, dyPixels) {
+            const spatialResolution = (156543.03392 * Math.cos(startLat * Math.PI / 180)) / Math.pow(2, zoomLevel);
+
+            console.log(spatialResolution)
+            const earthRadius = 6378137; // Earth's radius in meters (approximate)
+
+            const dxMeters = dxPixels * spatialResolution;
+            const dyMeters = dyPixels * spatialResolution;
+
+            const dLat = dyMeters / earthRadius * 180 / Math.PI;
+            const dLon = dxMeters / earthRadius * 180 / Math.PI / Math.cos(startLat * Math.PI / 180);
+
+            const endLat = startLat + dLat;
+            const endLon = startLon + dLon;
+
+            return [endLat, endLon];
+        }
+
 
         function deleteImage(index) {
             imagesArray.splice(index, 1)
@@ -83,58 +105,79 @@
             return coords
         }
 
-
-        async function  requestSat() {
-            coords = getCoords(active_img)
-
-            // GET REQUEST TO SERVER SAT IMAGE
-            $.ajax({
+        async function sendSatRequest(data, success_fun){
+            await $.ajax({
                 url: "http://147.32.71.74:443/api/request_satelite_image",
                 type: "GET",
                 CORS:true,
                 headers: {
                     'Access-Control-Allow-Origin': '*',
                 },
-                data: {
-                    "lat": coords[0],
-                    "lon": coords[1],
-                    "zoom": 19,
-                    "img_name": active_img.name
-                },
+                data: data,
                 xhr:function(){// Seems like the only way to get access to the xhr object
                     var xhr = new XMLHttpRequest();
                     xhr.responseType= 'blob'
                     return xhr;
                 },
-                success: function (data) {
-                    console.log(data);
-                    var overlay = document.getElementById('overlay');
-                    overlay.style.display = "block";
-                    var img = document.getElementById('img');
-                    img.src = URL.createObjectURL(data);
-                    $("#img").on("click", function(event) {
-                        console.log(event)
-                        var x = event.originalEvent.layerX;
-                        var y = event.originalEvent.layerY;
-                        alert("X Coordinate: " + x + " Y Coordinate: " + y);
-                    });
-                    // container = document.getElementById("canvas_sat");
-                    // container.innerHTML = '';
-                    // container.innerHTML = `<canvas id="canvas_sat_img" style="border:1px solid black;"></canvas>`
-
-                    // satellite_tool = new AnotationCanvas('canvas_sat_img', data_obj["url"], 820);
-                    // satellite_tool.init();
-                }, 
+                success: success_fun,
                 error: function (data) {
                     console.log(data);
                     alert("Error occured, try again")
-                    
                 }
-            }).done(function (data) {
-                console.log(data);
-                console.log("okaa")
-
             });
+        }
+
+
+        function requestZoomed(new_coords) {
+            console.log()
+            data = {
+                    "lat": new_coords[0],
+                    "lon": new_coords[1],
+                    "zoom": 20,
+                    "img_name": new_coords.toString()+"_20.jpg"
+            }
+
+            success_fn = (data) => {
+                console.log(data);
+                container = document.getElementById("canvas_sec");
+                container.innerHTML = '';
+                container.innerHTML = `<canvas id="canvas_sat" style="border:1px solid black;"></canvas>`
+                let satUrl = URL.createObjectURL(data);
+                console.log(satUrl)
+                satellite_tool = new AnotationCanvas('canvas_sat', satUrl, 820);
+                satellite_tool.init();
+            };
+            sendSatRequest(data, success_fn)
+
+        }
+       
+
+        function requestSat() {
+            coords = getCoords(active_img)
+            var new_coords;
+            data = {
+                "lat": coords[0],
+                "lon": coords[1],
+                "zoom": 19,
+                "img_name": coords.toString()+"_19.jpg"
+            };
+            success_fun = (data) => {
+                console.log(data);
+                var overlay = document.getElementById('overlay');
+                overlay.style.display = "block";
+                var img = document.getElementById('img');
+                img.src = URL.createObjectURL(data);
+                $("#img").on("click", (event) => {
+                    console.log(event)
+                    console.log(this)
+                    var dx = event.originalEvent.layerX - event.target.width / 2;
+                    var dy =  event.target.width / 2 - event.originalEvent.layerY ;
+                    new_coords = pixelToLatLon(19, coords[0], coords[1],  dx, dy)
+                    overlay.style.display = "none";
+                    requestZoomed(new_coords)
+                });
+            };
+            sendSatRequest(data, success_fun)
         }
 
         function sendAnnot() {
@@ -147,8 +190,10 @@
             if (confirm('Are you sure satellite image matches and you want to send the annotations?')) {
                 // POST REQUEST TO SERVER ANNOTATIONS
                 const formData = new FormData()
-                formData.append('annot', anotation_tool.get_annotation_obj())
-                formData.append('img', active_img)
+                formData.append('annot_pic', anotation_tool.get_annotation_obj())
+                formData.append('img_pic', active_img)
+                formData.append('annot_sat', anotation_tool.get_annotation_obj())
+                formData.append('img_sat', active_img)
 
                 console.log("sending annot");
                 fetch(url, {
@@ -275,7 +320,10 @@
                 <canvas id="canvas_img" style="border:1px solid black;"></canvas>
             </div>
 
-            <canvas id="zoom_win" width="400" height="200" style="display:none;position:absolute;top:0;left:0;border:1px solid black;"></canvas>
+            <div id="canvas_zoom">
+                <canvas id="zoom_win" width="400" height="200" style="display:none;position:absolute;top:0;left:0;border:1px solid black;"></canvas>
+
+            </div>
 
             <div id="canvas_sec">
                 <canvas id="canvas_sat" style="border:1px solid black;"></canvas>
@@ -289,13 +337,14 @@
         </div>
     </div>  
 
-    <div id="overlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);z-index:1000;">
+    <div id="overlay" class="overlay">
         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">
-            <h3 id="overlay_text" style="color:white">Click on the captured house.</h3>
-            <img id="img" width=100%>
-            <button type="button" class="btn btn-dark" onclick=closeOverlay()>
-                Close
-            </button>
+            
+            <img id="img" width="600px">
+
+            <h4 id="overlay_text" style="color:white">
+                By clicking on the captured house, you confirm its position and close this screen.
+            </h4>
         </div>
 
     </div>

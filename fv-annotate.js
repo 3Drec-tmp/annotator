@@ -195,7 +195,6 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
         var crossHairSzie = 60;
         var x = event.pageX - this.offsetLeft;
         var y = event.pageY - this.offsetTop;
-        console.log(event);
 
         // Get the context of the magnifying glass canvas
         var magnifyingGlassCtx = magnifyingGlassCanvas.getContext("2d");
@@ -279,13 +278,6 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
         event.preventDefault();
       }
     });
-  };
-
-  this.load_image = function (img_path) {
-    this._img_path = img_path;
-    this._canvas.dispose();
-    this.init_img();
-    console.log("load image", img_path);
   };
 
   this.init_img = function () {
@@ -519,12 +511,6 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
     }
 
     return data_obj;
-    console.log(JSON.stringify(data_obj));
-    // $.ajax({
-    //   type: "POST",
-    //   url: "http://xxx",
-    //   data: JSON.stringify(data_obj),
-    // });
   };
 }
 
