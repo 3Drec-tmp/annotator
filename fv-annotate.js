@@ -128,6 +128,7 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
   this._scale = null;
   this._polygons = [];
   this._active_polygon = null;
+  this._original_img_shape = null;
 
   this.isEmpty = function () {
     return this._polygons.length == 0;
@@ -294,6 +295,7 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
       at._img.selectable = false;
       at._img.hoverCursor = "default";
       at._img.id = at._img_id;
+      at._original_img_shape = [at._img.width, at._img.height];
 
       at._scale = at._img_width / at._img.width;
       at._img.scale(at._scale);

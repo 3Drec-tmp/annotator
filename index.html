@@ -25,10 +25,9 @@
         var anotation_tool = null;
         var satellite_tool = null;
         var active_img = null;
-        var active_sat_img = null;
+        var active_sat_img_name = null;
 
-
-        const url = "http://147.32.71.74:443/api/save_request"
+        const url = "http://147.32.71.74:443/api/insert_annotation"
 
         function sendToCanvas(index) {
             console.log(imagesArray[index])
@@ -45,16 +44,13 @@
             anotation_tool = new AnotationCanvas('canvas_img' , URL.createObjectURL(imagesArray[index]), 820);
             anotation_tool.init();
             anotation_tool.init_zoom();
+            console.log(anotation_tool)
 
-            // if (satellite_tool != null) {
-            //     if (confirm('Does satellite image matche?')) {
-            //     // Save it!
-            //     console.log('Thing was saved to the database.');
-            //     } else {
-            //     // Do nothing!
-            //     console.log('Thing was not saved to the database.');
-            //     }   
-            // }
+            if (satellite_tool != null) {
+                if (!confirm('Does satellite image matche?')) {
+                    requestSat();
+                }   
+            }
         }
 
         function displayImageList(output) {
@@ -105,8 +101,8 @@
             return coords
         }
 
-        async function sendSatRequest(data, success_fun){
-            await $.ajax({
+        function sendSatRequest(data, success_fun){
+            $.ajax({
                 url: "http://147.32.71.74:443/api/request_satelite_image",
                 type: "GET",
                 CORS:true,
@@ -146,6 +142,7 @@
                 console.log(satUrl)
                 satellite_tool = new AnotationCanvas('canvas_sat', satUrl, 820);
                 satellite_tool.init();
+                active_sat_img_name = new_coords.toString()+"_20.jpg"
             };
             sendSatRequest(data, success_fn)
 
@@ -181,60 +178,45 @@
         }
 
         function sendAnnot() {
-            // if (anotation_tool == null || satellite_tool == null) {
-            //     alert("You have to load image and satellite image first")
-            // }
-            // if (anotation_tool.isEmpty() || satellite_tool.isEmpty()) {
-            //     alert("You have to annotate image and satellite image first")
-            // }
+            if (anotation_tool == null || satellite_tool == null) {
+                alert("You have to load image and satellite image first")
+            }
+            if (anotation_tool.isEmpty() || satellite_tool.isEmpty()) {
+                alert("You have to annotate image and satellite image first")
+            }
             if (confirm('Are you sure satellite image matches and you want to send the annotations?')) {
                 // POST REQUEST TO SERVER ANNOTATIONS
                 const formData = new FormData()
                 formData.append('annot_pic', anotation_tool.get_annotation_obj())
                 formData.append('img_pic', active_img)
+                formData.append('img_pic_name', active_img.name)
+                formData.append('img_pic_width', anotation_tool._original_img_shape[0])
+                formData.append('img_pic_height', anotation_tool._original_img_shape[1])
                 formData.append('annot_sat', anotation_tool.get_annotation_obj())
-                formData.append('img_sat', active_img)
+                formData.append('img_sat_name', active_sat_img_name)
 
+                
+                console.log(formData)
                 console.log("sending annot");
                 fetch(url, {
                     method: 'POST',
                     body: formData,
+                    CORS:true,
                     headers:{
                         'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'multipart/form-data'
                     }
                 })
                 .then(data => {
                     console.log(data)
+                    // remove canvas and image from images
+                    
+
                 })
                 .catch(error => {
                     console.error(error)
                 });
 
-            //                     $.ajax({
-            //     url: url,
-            //     type: "POST",
-            //     data: {
-            //         "lat": coords[0],
-            //         "lon": coords[1],
-            //         "zoom": 19,
-            //     },
-            //     success: function (data) {
-            //         data_obj = JSON.parse(data);
-            //         console.log(data_obj);
-            //         console.log("ok")
-            //         // container = document.getElementById("canvas_sat");
-            //         // container.innerHTML = '';
-            //         // container.innerHTML = `<canvas id="canvas_sat_img" style="border:1px solid black;"></canvas>`
-
-            //         // satellite_tool = new AnotationCanvas('canvas_sat_img', data_obj["url"], 820);
-            //         // satellite_tool.init();
-            //     }, 
-            //     error: function (data) {
-            //         console.log(data);
-            //         alert("Error occured, try again")
-                    
-            //     }
-            // });
             } 
         }
  
@@ -307,7 +289,6 @@
                 <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
                 <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
                 <p>5) Switch between classes by pressing "Tab" on keyboard</p>
-        
         
                 <div id="anot_class_000" style="background-color:red" class="anot_class">&nbsp;</div>
                 <div id="anot_class_001" style="background-color:blue" class="anot_class">&nbsp;</div>
