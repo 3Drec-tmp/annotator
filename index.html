@@ -37,18 +37,17 @@
             container = document.getElementById("canvas_main");
             container.innerHTML = '';
             container.innerHTML = `<canvas id="canvas_img" style="border:1px solid black;"></canvas>`
-            containerz = document.getElementById("canvas_zoom");
+            containerz = document.getElementById("canvas_main_zoom");
             containerz.innerHTML = '';
-            containerz.innerHTML = `<canvas id="zoom_win" width="400" height="200" style="display:none;position:absolute;top:0;left:0;border:1px solid black;"></canvas>
+            containerz.innerHTML = `<canvas id="zoom_main_win" width="200" height="200" ></canvas>
 `
 
-            anotation_tool = new AnotationCanvas('canvas_img' , URL.createObjectURL(imagesArray[index]), 820);
+            anotation_tool = new AnotationCanvas('canvas_img', 'zoom_main_win' , URL.createObjectURL(imagesArray[index]), 820);
             anotation_tool.init();
             anotation_tool.init_zoom();
-            console.log(anotation_tool)
 
             if (satellite_tool != null) {
-                if (!confirm('Does satellite image matche?')) {
+                if (!confirm('Does satellite image match?')) {
                     requestSat();
                 }   
             }
@@ -62,7 +61,9 @@
                             <button type="button" class="btn btn-outline-dark btn-small" onclick="sendToCanvas(${index})">
                                 "${image.name}"
                             </button>
-                            
+                            <button type="button" class="btn btn-outline-dark btn-small" onclick="deleteImage(${index})">
+                                Delete
+                            </button>
                             </div>`
             })
             output.innerHTML = images
@@ -162,10 +163,15 @@
                 container = document.getElementById("canvas_sec");
                 container.innerHTML = '';
                 container.innerHTML = `<canvas id="canvas_sat" style="border:1px solid black;"></canvas>`
+                containerz = document.getElementById("canvas_sec_zoom");
+                containerz.innerHTML = '';
+                containerz.innerHTML = `<canvas id="zoom_sec_win" width="200" height="200"></canvas>
+    `
                 let satUrl = URL.createObjectURL(data);
                 console.log(satUrl)
-                satellite_tool = new AnotationCanvas('canvas_sat', satUrl, 820);
+                satellite_tool = new AnotationCanvas('canvas_sat', 'zoom_sec_win' ,satUrl, 820);
                 satellite_tool.init();
+                satellite_tool.init_zoom();
                 active_sat_img_name = new_coords.toString()+"_20.jpg"
             };
             sendSatRequest(data, success_fn)
@@ -277,77 +283,87 @@
 <body>
 
     <div class="header">
-        <h2>Annotator for FVApp</h2>
-        <p>If any problems occur, contact @fel.cvut.cz.</p>
+        <h4>Annotator for SolAR</h4>
+        <h6>If any problems occur, contact kafkaon1@fel.cvut.cz.</h6>
     </div>
 
     <div class="content">
         <div class="navigation">
-                <h3>Image loading</h3>
+                <h4>Image loading</h4>
                 <div class="form-group">
                     <label for="file-selector">Select image:</label>
                     <input type="file" multiple id="file-selector" name="file-selector" accept="image/*">
                 </div>
                 <div class="image-list">
                     <div>
-                        <h4>Image list</h4>
-                        <p> Then click on image in order to open it in canvas.</p>
+                        <h5>Image list</h5>
+                        <p> To open image in canvas, click on  its name.</p>
                     </div>
                     <div class="image-list-content">
                         
                     </div>
                 </div>
                 <div class="sat">
-                    <h3>Satellite image</h3>
-                    <p>Request new satellite image corresponding to image on canvas</p>
+                    <h4>Satellite image req.</h4>
+                    <p>Request new satellite image corresponding to the image on canvas</p>
                     <button type="button" class="btn btn-primary" onclick=requestSat()>
                         Get image
                     </button>
                 </div>
-
-                <h3>Anotation steps</h3>
-                <p>1) Select the class</p>
-                <p>2) Anotate the object on the image</p>
-                <p>2a) After start editing controll points, new controll points are added to closest line segment</p>
-                <p>2b) You can delete the points by Backspace or Delete in the order they were added</p>
-                <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
-                <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
-                <p>5) Switch between classes by pressing "Tab" on keyboard</p>
-                <div class="classes_cont">
-                    <div id="anot_class_000" style="background-color:red" class="anot_class">&nbsp;</div>
-                    <div id="anot_class_001" style="background-color:blue" class="anot_class">&nbsp;</div>
-                    <div id="anot_class_002" style="background-color:green" class="anot_class">&nbsp;</div>
-                    <div id="anot_class_003" style="background-color:silver" class="anot_class">&nbsp;</div>
-                    <div id="anot_class_004" style="background-color:yellow" class="anot_class">&nbsp;</div>
+                <div class="fin">
+                    <h4>Finished image</h4>
+                    <p>If this annotation pair of your and sat. image is finished, you can send it.</p>
+                    <div id="send_button">
+                        <button type="button" class="btn btn-dark" onclick=sendAnnot()>
+                            Send annotation
+                        </button>
+                    </div>
                 </div>
+
+              
         </div>
         <div class="canvases">
             <div id="canvas_main">
                 <canvas id="canvas_img" style="border:1px solid black;"></canvas>
             </div>
 
-            <div id="canvas_zoom">
-                <canvas id="zoom_win" width="400" height="200" style="display:none;position:absolute;top:0;left:0;border:1px solid black;"></canvas>
-
-            </div>
-
             <div id="canvas_sec">
                 <canvas id="canvas_sat" style="border:1px solid black;"></canvas>
             </div>
-            <div id="send_button">
-                <button type="button" class="btn btn-dark" onclick=sendAnnot()>
-                    Send annotation
-                </button>
+
+            <div id="canvas_main_zoom">
+                <canvas id="zoom_main_win" width="200" height="200" s></canvas>
             </div>
+
+            <div id="canvas_sec_zoom">
+                <canvas id="zoom_sec_win" width="200" height="200" s></canvas>
+            </div>
+
            
         </div>
     </div>  
+    <div class="footer">
+    <h3>Anotation steps</h3>
+    <p>1) Select the class</p>
+    <p>2) Anotate the object on the image</p>
+    <p>2a) After start editing controll points, new controll points are added to closest line segment</p>
+    <p>2b) You can delete the points by Backspace or Delete in the order they were added</p>
+    <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
+    <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
+    <p>5) Switch between classes by pressing "Tab" on keyboard</p>
+    <div class="classes_cont">
+        <div id="anot_class_000" style="background-color:red" class="anot_class">&nbsp;</div>
+        <div id="anot_class_001" style="background-color:blue" class="anot_class">&nbsp;</div>
+        <div id="anot_class_002" style="background-color:green" class="anot_class">&nbsp;</div>
+        <div id="anot_class_003" style="background-color:silver" class="anot_class">&nbsp;</div>
+        <div id="anot_class_004" style="background-color:yellow" class="anot_class">&nbsp;</div>
+    </div>
+    </div>
 
     <div id="overlay" class="overlay">
         <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">
             
             <img id="img" width="600px">
-
             <h4 id="overlay_text" style="color:white">
                 By clicking on the captured house, you confirm its position and close this screen.
             </h4>

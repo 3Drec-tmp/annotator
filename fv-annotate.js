@@ -118,7 +118,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
   };
 }
 
-function AnotationCanvas(canvas_id, img_path, img_width) {
+function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   this._canvas_id = canvas_id;
   this._canvas = null;
   this._img_id = null;
@@ -129,6 +129,8 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
   this._polygons = [];
   this._active_polygon = null;
   this._original_img_shape = null;
+  this._zoom_canvas_id = zoom_canvas_id;
+  console.log("zoom_canvas_id: " + zoom_canvas_id);
 
   this.isEmpty = function () {
     return this._polygons.length == 0;
@@ -170,10 +172,13 @@ function AnotationCanvas(canvas_id, img_path, img_width) {
     // init magnifier canvas
     this.init_zoom = function () {
       /// Get the main canvas element
-      var mainCanvas = document.getElementsByClassName("upper-canvas")[0];
+      var upper_id = 0 ? this.zoom_canvas_id == "zoom_main_win" : 1;
+      var mainCanvas =
+        document.getElementsByClassName("upper-canvas")[upper_id];
 
       // Create a new canvas element for the magnifying glass
-      var magnifyingGlassCanvas = document.getElementById("zoom_win");
+      var magnifyingGlassCanvas = document.getElementById(this.zoom_canvas_id);
+      console.log("magnifyingGlassCanvas: " + magnifyingGlassCanvas);
       magnifyingGlassCanvas.id = "magnifyingGlassCanvas";
       magnifyingGlassCanvas.width = 200; // Set the width of the magnifying glass
       magnifyingGlassCanvas.height = 200; // Set the height of the magnifying glass
