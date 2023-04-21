@@ -42,7 +42,7 @@
             containerz.innerHTML = `<canvas id="zoom_main_win" width="200" height="200" ></canvas>
 `
 
-            anotation_tool = new AnotationCanvas('canvas_img', 'zoom_main_win' , URL.createObjectURL(imagesArray[index]), 820);
+            anotation_tool = new AnotationCanvas('canvas_img', "zoom_main_win" , URL.createObjectURL(imagesArray[index]), 820);
             anotation_tool.init();
             anotation_tool.init_zoom();
 
@@ -61,9 +61,7 @@
                             <button type="button" class="btn btn-outline-dark btn-small" onclick="sendToCanvas(${index})">
                                 "${image.name}"
                             </button>
-                            <button type="button" class="btn btn-outline-dark btn-small" onclick="deleteImage(${index})">
-                                Delete
-                            </button>
+                                <span onclick="deleteImage(${index})" style="cursor:pointer;">&times;</span>
                             </div>`
             })
             output.innerHTML = images
@@ -89,8 +87,11 @@
 
 
         function deleteImage(index) {
+            console.log(index)
             imagesArray.splice(index, 1)
-            displayImagesList()
+
+            imageList = document.getElementsByClassName("image-list-content")[0];
+            displayImageList(imageList )
         }
         
         function dmsToDecimal(degs, mins, secs, direction) {
@@ -247,6 +248,15 @@
                     console.error(error)
                 });
 
+
+                const index = imagesArray.indexOf(active_img);
+                deleteImage(index)
+                anotation_tool.destroy_zoom()
+                anotation_tool = null
+                container = document.getElementById("canvas_main");
+                container.innerHTML = '';
+                container.innerHTML = `<canvas id="canvas_img" style="border:1px solid black;"></canvas>`
+
             } 
         }
  
@@ -294,14 +304,10 @@
                     <label for="file-selector">Select image:</label>
                     <input type="file" multiple id="file-selector" name="file-selector" accept="image/*">
                 </div>
-                <div class="image-list">
-                    <div>
-                        <h5>Image list</h5>
-                        <p> To open image in canvas, click on  its name.</p>
-                    </div>
-                    <div class="image-list-content">
-                        
-                    </div>
+                
+                <p> To open image in canvas, click on  its name.</p>
+                <div class="image-list-content">
+                    
                 </div>
                 <div class="sat">
                     <h4>Satellite image req.</h4>
@@ -332,11 +338,11 @@
             </div>
 
             <div id="canvas_main_zoom">
-                <canvas id="zoom_main_win" width="200" height="200" s></canvas>
+                <canvas id="zoom_main_win" width="200" height="200"></canvas>
             </div>
 
             <div id="canvas_sec_zoom">
-                <canvas id="zoom_sec_win" width="200" height="200" s></canvas>
+                <canvas id="zoom_sec_win" width="200" height="200"></canvas>
             </div>
 
            

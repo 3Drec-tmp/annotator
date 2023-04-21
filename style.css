@@ -31,21 +31,19 @@ body{
     /* background: #d4fce7; */
     border-radius: 20px;
     padding: 1rem;
-    width: 300px;
+    width: 250px;
 }
 
 .image-list {
-    height: 350px;
-    max-height: 350px;
+    height: 400px;
     
 }
 
 .image-list-content{
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
-    overflow-y: hidden;
-    max-height: 350px;
+    overflow-y: scroll;
+    height: 300px;
 }
 
 .overlay {

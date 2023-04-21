@@ -172,12 +172,14 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     // init magnifier canvas
     this.init_zoom = function () {
       /// Get the main canvas element
-      var upper_id = 0 ? this.zoom_canvas_id == "zoom_main_win" : 1;
+
+      var upper_id = this._zoom_canvas_id === "zoom_main_win" ? 0 : 1;
+      console.log("upper_id: " + upper_id);
       var mainCanvas =
         document.getElementsByClassName("upper-canvas")[upper_id];
 
       // Create a new canvas element for the magnifying glass
-      var magnifyingGlassCanvas = document.getElementById(this.zoom_canvas_id);
+      var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
       console.log("magnifyingGlassCanvas: " + magnifyingGlassCanvas);
       magnifyingGlassCanvas.id = "magnifyingGlassCanvas";
       magnifyingGlassCanvas.width = 200; // Set the width of the magnifying glass
@@ -215,7 +217,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
 
         // Draw a portion of the main canvas onto the magnifying glass canvas
         magnifyingGlassCtx.drawImage(
-          document.getElementsByClassName("lower-canvas")[0],
+          document.getElementsByClassName("lower-canvas")[upper_id],
           event.layerX - 40,
           event.layerY - 40,
           80,
@@ -251,7 +253,10 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         magnifyingGlassCtx.stroke();
       });
     };
-
+    this.destroy_zoom = function () {
+      var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
+      magnifyingGlassCanvas.remove();
+    };
     // onclic next
     var next_button = document.getElementById("next_img");
     if (next_button != null) {
