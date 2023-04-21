@@ -256,6 +256,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     this.destroy_zoom = function () {
       var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
       magnifyingGlassCanvas.remove();
+      // remove listeners
     };
     // onclic next
     var next_button = document.getElementById("next_img");

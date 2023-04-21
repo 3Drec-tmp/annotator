@@ -248,7 +248,6 @@
                     console.error(error)
                 });
 
-
                 const index = imagesArray.indexOf(active_img);
                 deleteImage(index)
                 anotation_tool.destroy_zoom()
@@ -275,20 +274,9 @@
                 displayImageList(imageList)
             });
 
-            
-
         });
         
     </script>
-
-    <style type="text/css">
-        .anot_class {
-            float: left;
-            width: 40px;
-            height: 40px;
-            margin: 5px;
-        }
-    </style>
 </head>
 <body>
 
@@ -299,7 +287,7 @@
 
     <div class="content">
         <div class="navigation">
-                <h4>Image loading</h4>
+                <h5>Image loading</h5>
                 <div class="form-group">
                     <label for="file-selector">Select image:</label>
                     <input type="file" multiple id="file-selector" name="file-selector" accept="image/*">
@@ -309,8 +297,18 @@
                 <div class="image-list-content">
                     
                 </div>
+
+                <h5>Annotation class</h5>
+                <div class="classes_cont">
+                    <input id=anot_class_001 name=classradios type=radio><label for=anot_class_001> <div class="radio-label"> <p>Roof</p><div style="background-color:red;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_002 name=classradios type=radio><label for=anot_class_002> <div class="radio-label"> <p>Window</p><div style="background-color:blue;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_003 name=classradios type=radio><label for=anot_class_003> <div class="radio-label"> <p>Door</p><div style="background-color:green;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_004 name=classradios type=radio><label for=anot_class_004> <div class="radio-label"> <p>Chimney</p><div style="background-color:yellow;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_005 name=classradios type=radio><label for=anot_class_005> <div class="radio-label"> <p>Other</p><div style="background-color:purple;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+            
+                </div>
                 <div class="sat">
-                    <h4>Satellite image req.</h4>
+                    <h5>Satellite image req.</h5>
                     <p>Request new satellite image corresponding to the image on canvas</p>
                     <button type="button" class="btn btn-primary" onclick=requestSat()>
                         Get image
@@ -345,7 +343,6 @@
                 <canvas id="zoom_sec_win" width="200" height="200"></canvas>
             </div>
 
-           
         </div>
     </div>  
     <div class="footer">
@@ -357,13 +354,7 @@
     <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
     <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
     <p>5) Switch between classes by pressing "Tab" on keyboard</p>
-    <div class="classes_cont">
-        <div id="anot_class_000" style="background-color:red" class="anot_class">&nbsp;</div>
-        <div id="anot_class_001" style="background-color:blue" class="anot_class">&nbsp;</div>
-        <div id="anot_class_002" style="background-color:green" class="anot_class">&nbsp;</div>
-        <div id="anot_class_003" style="background-color:silver" class="anot_class">&nbsp;</div>
-        <div id="anot_class_004" style="background-color:yellow" class="anot_class">&nbsp;</div>
-    </div>
+
     </div>
 
     <div id="overlay" class="overlay">
