@@ -136,6 +136,10 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     return this._polygons.length == 0;
   };
 
+  this.change_active = function (polygon_id) {
+    this.set_active(polygon_id, colors[polygon_id]);
+  };
+
   // init canvas
   this.init = function () {
     if (!document.getElementById(this._canvas_id)) {

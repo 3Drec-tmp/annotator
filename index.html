@@ -52,6 +52,14 @@
                 }   
             }
         }
+        function setActivePolygon(index) {
+            if (anotation_tool != null) {
+                anotation_tool.changeActivePolygon(index)
+            }
+            if (satellite_tool != null) {
+                satellite_tool.changeActivePolygon(index)
+            }
+        }
 
         function displayImageList(output) {
             let images = ""
