@@ -518,6 +518,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   };
 
   this.get_annotation_obj = function (product_id) {
+    /// TODO !! == Make more efective
     var data_obj = {
       product_id: product_id,
       dict: [],
