@@ -37,6 +37,9 @@ function pt_line_segment_dist(newpt, pt1, pt2) {
 function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
   this._polygon = null;
   this._points = [];
+  this._labels = [];
+  this._label_objects = [];
+  this._last_label = 0;
   this._points_order = [];
   this._anotation_canvas = anotation_canvas;
   this._polygon_id = polygon_id;
@@ -54,7 +57,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
       stroke: this._polygon_color,
       objectCaching: false,
       transparentCorners: true,
-      cornerSize: 8,
+      cornerSize: 7,
     });
     this._anotation_canvas._canvas.add(this._polygon);
     this._polygon.lockMovementX = true;
@@ -76,6 +79,26 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
           (pt1.x - newpt.x) * (pt2.y - pt1.y)
       ) / Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2))
     );
+  };
+
+  this.add_label = function (coords) {
+    var label = this._last_label + 1;
+    console.log(label);
+    this._labels.push(label);
+    this._last_label = label;
+
+    const pointLabel = new fabric.Text(label.toString(), {
+      left: coords.x,
+      top: coords.y,
+      textAlign: "center",
+      fontSize: 15,
+      fontWeight: "bold",
+      fill: "black",
+      stroke: "white",
+      strokeWidth: 0.2,
+    });
+    this._label_objects.push(pointLabel);
+    this._anotation_canvas._canvas.add(pointLabel);
   };
 
   this.pt_line_segment_dist = function (newpt, pt1, pt2) {
@@ -105,12 +128,26 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
         if (last_pt_order < this._points_order[i]) {
           last_pt_order = this._points_order[i];
           last_pt_id = i;
+          console.log("aaa");
         }
       }
       this._points.splice(last_pt_id, 1);
       this._points_order.splice(last_pt_id, 1);
       Edit(this._anotation_canvas._canvas, this._polygon);
 
+      console.log("last_pt_id", last_pt_id, "last_pt_order", last_pt_order);
+      console.log(this._points);
+      console.log(this._labels);
+
+      var lab_id =
+        last_pt_id === -1 ? this._label_objects.length - 1 : last_pt_id;
+      var labelObject = this._label_objects[lab_id];
+      console.log(labelObject);
+
+      this._anotation_canvas._canvas.remove(labelObject);
+      this._labels.splice(last_pt_id, 1);
+      this._label_objects.splice(last_pt_id, 1);
+      this._last_label -= 1;
       if (this._points.length < 2) {
         this._status = 0;
       }
@@ -183,6 +220,12 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       if (event.key == "Tab") {
         at.change_active_polygon_in_class();
         event.preventDefault();
+      }
+      if (event.key == "ArrowRight") {
+        at._active_polygon._last_label += 1;
+      }
+      if (event.key == "ArrowLeft") {
+        at._active_polygon._last_label -= 1;
       }
     });
   };
@@ -270,6 +313,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       magnifyingGlassCtx.stroke();
     });
   };
+
   this.destroy_zoom = function () {
     var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
     magnifyingGlassCanvas.remove();
@@ -345,7 +389,8 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         }
       } else {
         p._points.push(pt);
-        p._points_order.push(p._points.length);
+
+        p.add_label(pt);
       }
       Edit(this._canvas, p._polygon);
     }
@@ -479,7 +524,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       data_obj.dict.push({ class_id: i, values: class_anotations });
     }
 
-    return data_obj;
+    return JSON.stringify(data_obj);
   };
 }
 
