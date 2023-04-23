@@ -44,18 +44,18 @@
 `
 
             anotation_tool = new AnotationCanvas('canvas_img', "zoom_main_win" , URL.createObjectURL(imagesArray[index]), 820);
-            anotation_tool.init();
+            anotation_tool.init(active_polygon_id);
             anotation_tool.init_zoom();
 
             if (satellite_tool != null) {
-                if (!confirm('Does satellite image match?')) {
+                if (!confirm('Does the loaded satellite image match?')) {
                     requestSat();
                 }   
             }
         }
 
         function setActivePolygon(index) {
-            console.log(index)
+            active_polygon_id = index
             if (anotation_tool != null) {
                 anotation_tool.changeActivePolygon(index)
             }
@@ -182,7 +182,7 @@
                 let satUrl = URL.createObjectURL(data);
                 console.log(satUrl)
                 satellite_tool = new AnotationCanvas('canvas_sat', 'zoom_sec_win' ,satUrl, 820);
-                satellite_tool.init();
+                satellite_tool.init(active_polygon_id);
                 satellite_tool.init_zoom();
                 active_sat_img_name = new_coords.toString()+"_20.jpg"
             };
@@ -312,10 +312,10 @@
                 <h5>Annotation class</h5>
                 <div class="classes_cont">
                     <input id=anot_class_1 name=classradios type=radio checked><label for=anot_class_1 onclick=setActivePolygon(0)> <div class="radio-label"> <p>Roof</p><div style="background-color:red;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_2 name=classradios type=radio><label for=anot_class_2 onclick=setActivePolygon(0)> <div class="radio-label"> <p>Window</p><div style="background-color:blue;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_3 name=classradios type=radio><label for=anot_class_3> <div class="radio-label"> <p>Door</p><div style="background-color:green;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_4 name=classradios type=radio><label for=anot_class_4> <div class="radio-label"> <p>Chimney</p><div style="background-color:yellow;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_5 name=classradios type=radio><label for=anot_class_5> <div class="radio-label"> <p>Other</p><div style="background-color:purple;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_2 name=classradios type=radio><label for=anot_class_2 onclick=setActivePolygon(1)> <div class="radio-label"> <p>Window</p><div style="background-color:blue;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_3 name=classradios type=radio><label for=anot_class_3 onclick=setActivePolygon(2)> <div class="radio-label"> <p>Door</p><div style="background-color:green;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_4 name=classradios type=radio><label for=anot_class_4 onclick=setActivePolygon(3)> <div class="radio-label"> <p>Chimney</p><div style="background-color:yellow;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_5 name=classradios type=radio><label for=anot_class_5 onclick=setActivePolygon(4)> <div class="radio-label"> <p>Other</p><div style="background-color:purple;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
             
                 </div>
                 <div class="sat">

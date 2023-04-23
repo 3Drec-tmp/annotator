@@ -159,9 +159,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       at.process_canvas_click_event(e);
     });
 
-    annot_block.color_name = colors[polygon_id];
-    at.set_active(polygon_id, this.color_name);
-  }
+    at.set_active(polygon_id, colors[polygon_id]);
 
     // keyboard listening
     document.addEventListener("keydown", function (event) {
