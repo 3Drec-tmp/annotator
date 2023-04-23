@@ -27,6 +27,7 @@
         var satellite_tool = null;
         var active_img = null;
         var active_sat_img_name = null;
+        var active_polygon_id = 0;
 
         const url = "http://147.32.71.74:443/api/insert_annotation"
 
@@ -52,7 +53,9 @@
                 }   
             }
         }
+
         function setActivePolygon(index) {
+            console.log(index)
             if (anotation_tool != null) {
                 anotation_tool.changeActivePolygon(index)
             }
@@ -308,11 +311,11 @@
 
                 <h5>Annotation class</h5>
                 <div class="classes_cont">
-                    <input id=anot_class_001 name=classradios type=radio><label for=anot_class_001> <div class="radio-label"> <p>Roof</p><div style="background-color:red;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_002 name=classradios type=radio><label for=anot_class_002> <div class="radio-label"> <p>Window</p><div style="background-color:blue;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_003 name=classradios type=radio><label for=anot_class_003> <div class="radio-label"> <p>Door</p><div style="background-color:green;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_004 name=classradios type=radio><label for=anot_class_004> <div class="radio-label"> <p>Chimney</p><div style="background-color:yellow;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_005 name=classradios type=radio><label for=anot_class_005> <div class="radio-label"> <p>Other</p><div style="background-color:purple;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_1 name=classradios type=radio checked><label for=anot_class_1 onclick=setActivePolygon(0)> <div class="radio-label"> <p>Roof</p><div style="background-color:red;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_2 name=classradios type=radio><label for=anot_class_2 onclick=setActivePolygon(0)> <div class="radio-label"> <p>Window</p><div style="background-color:blue;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_3 name=classradios type=radio><label for=anot_class_3> <div class="radio-label"> <p>Door</p><div style="background-color:green;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_4 name=classradios type=radio><label for=anot_class_4> <div class="radio-label"> <p>Chimney</p><div style="background-color:yellow;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    <input id=anot_class_5 name=classradios type=radio><label for=anot_class_5> <div class="radio-label"> <p>Other</p><div style="background-color:purple;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
             
                 </div>
                 <div class="sat">

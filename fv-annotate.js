@@ -136,12 +136,12 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     return this._polygons.length == 0;
   };
 
-  this.change_active = function (polygon_id) {
+  this.changeActivePolygon = function (polygon_id) {
     this.set_active(polygon_id, colors[polygon_id]);
   };
 
   // init canvas
-  this.init = function () {
+  this.init = function (polygon_id) {
     if (!document.getElementById(this._canvas_id)) {
       alert("Canvas with canvas id: " + canvas_id + " does not exist.");
       return;
@@ -154,121 +154,14 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     }
     this.init_img();
 
-    // check if annotation already exist
-    this.load_anotation_if_exist();
-
     var at = this;
     this._canvas.on("mouse:up", function (e) {
       at.process_canvas_click_event(e);
     });
 
-    for (var i = 0; i < max_clases; i += 1) {
-      var annot_block = document.getElementById("anot_class_" + pad(i, 3));
-      if (annot_block != null) {
-        annot_block.annot_id = i;
-        annot_block.color_name = colors[i];
-        annot_block.onclick = function () {
-          at.set_active(this.annot_id, this.color_name);
-        };
-      }
-    }
-
-    // init magnifier canvas
-    this.init_zoom = function () {
-      /// Get the main canvas element
-
-      var upper_id = this._zoom_canvas_id === "zoom_main_win" ? 0 : 1;
-      console.log("upper_id: " + upper_id);
-      var mainCanvas =
-        document.getElementsByClassName("upper-canvas")[upper_id];
-
-      // Create a new canvas element for the magnifying glass
-      var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
-      console.log("magnifyingGlassCanvas: " + magnifyingGlassCanvas);
-      magnifyingGlassCanvas.id = "magnifyingGlassCanvas";
-      magnifyingGlassCanvas.width = 200; // Set the width of the magnifying glass
-      magnifyingGlassCanvas.height = 200; // Set the height of the magnifying glass
-      magnifyingGlassCanvas.style.position = "absolute"; // Set the position of the magnifying glass
-      magnifyingGlassCanvas.style.display = "none"; // Hide the magnifying glass initially
-
-      // Add an event listener to the main canvas to show the magnifying glass on mouseover
-      mainCanvas.addEventListener("mouseover", function (event) {
-        magnifyingGlassCanvas.style.display = "block";
-      });
-
-      // Add an event listener to the main canvas to hide the magnifying glass on mouseout
-      mainCanvas.addEventListener("mouseout", function (event) {
-        magnifyingGlassCanvas.style.display = "none";
-      });
-
-      // Add an event listener to the main canvas to update the magnifying glass on mousemove
-      mainCanvas.addEventListener("mousemove", function (event) {
-        // Get the position of the mouse cursor
-        var crossHairSzie = 60;
-        var x = event.pageX - this.offsetLeft;
-        var y = event.pageY - this.offsetTop;
-
-        // Get the context of the magnifying glass canvas
-        var magnifyingGlassCtx = magnifyingGlassCanvas.getContext("2d");
-
-        // Clear the magnifying glass canvas
-        magnifyingGlassCtx.clearRect(
-          0,
-          0,
-          magnifyingGlassCanvas.width,
-          magnifyingGlassCanvas.height
-        );
-
-        // Draw a portion of the main canvas onto the magnifying glass canvas
-        magnifyingGlassCtx.drawImage(
-          document.getElementsByClassName("lower-canvas")[upper_id],
-          event.layerX - 40,
-          event.layerY - 40,
-          80,
-          80,
-          0,
-          0,
-          magnifyingGlassCanvas.width,
-          magnifyingGlassCanvas.height
-        );
-
-        // Set the position of the magnifying glass to follow the mouse cursor
-        magnifyingGlassCanvas.style.left = x + 10 + "px";
-        magnifyingGlassCanvas.style.top = y + 10 + "px";
-
-        magnifyingGlassCtx.beginPath();
-        magnifyingGlassCtx.moveTo(
-          magnifyingGlassCanvas.width / 2,
-          magnifyingGlassCanvas.height / 2 - crossHairSzie / 2
-        );
-        magnifyingGlassCtx.lineTo(
-          magnifyingGlassCanvas.width / 2,
-          magnifyingGlassCanvas.height / 2 + crossHairSzie / 2
-        );
-        magnifyingGlassCtx.moveTo(
-          magnifyingGlassCanvas.width / 2 - crossHairSzie / 2,
-          magnifyingGlassCanvas.height / 2
-        );
-        magnifyingGlassCtx.lineTo(
-          magnifyingGlassCanvas.width / 2 + crossHairSzie / 2,
-          magnifyingGlassCanvas.height / 2
-        );
-        magnifyingGlassCtx.strokeStyle = "red";
-        magnifyingGlassCtx.stroke();
-      });
-    };
-    this.destroy_zoom = function () {
-      var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
-      magnifyingGlassCanvas.remove();
-      // remove listeners
-    };
-    // onclic next
-    var next_button = document.getElementById("next_img");
-    if (next_button != null) {
-      next_button.onclick = function () {
-        at.send_annotation_to_server(this.annot_id);
-      };
-    }
+    annot_block.color_name = colors[polygon_id];
+    at.set_active(polygon_id, this.color_name);
+  }
 
     // keyboard listening
     document.addEventListener("keydown", function (event) {
@@ -294,6 +187,95 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         event.preventDefault();
       }
     });
+  };
+
+  // init magnifier canvas
+  this.init_zoom = function () {
+    /// Get the main canvas element
+
+    var upper_id = this._zoom_canvas_id === "zoom_main_win" ? 0 : 1;
+    console.log("upper_id: " + upper_id);
+    var mainCanvas = document.getElementsByClassName("upper-canvas")[upper_id];
+
+    // Create a new canvas element for the magnifying glass
+    var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
+    console.log("magnifyingGlassCanvas: " + magnifyingGlassCanvas);
+    magnifyingGlassCanvas.id = "magnifyingGlassCanvas";
+    magnifyingGlassCanvas.width = 200; // Set the width of the magnifying glass
+    magnifyingGlassCanvas.height = 200; // Set the height of the magnifying glass
+    magnifyingGlassCanvas.style.position = "absolute"; // Set the position of the magnifying glass
+    magnifyingGlassCanvas.style.display = "none"; // Hide the magnifying glass initially
+
+    // Add an event listener to the main canvas to show the magnifying glass on mouseover
+    mainCanvas.addEventListener("mouseover", function (event) {
+      magnifyingGlassCanvas.style.display = "block";
+    });
+
+    // Add an event listener to the main canvas to hide the magnifying glass on mouseout
+    mainCanvas.addEventListener("mouseout", function (event) {
+      magnifyingGlassCanvas.style.display = "none";
+    });
+
+    // Add an event listener to the main canvas to update the magnifying glass on mousemove
+    mainCanvas.addEventListener("mousemove", function (event) {
+      // Get the position of the mouse cursor
+      var crossHairSzie = 60;
+      var x = event.pageX - this.offsetLeft;
+      var y = event.pageY - this.offsetTop;
+
+      // Get the context of the magnifying glass canvas
+      var magnifyingGlassCtx = magnifyingGlassCanvas.getContext("2d");
+
+      // Clear the magnifying glass canvas
+      magnifyingGlassCtx.clearRect(
+        0,
+        0,
+        magnifyingGlassCanvas.width,
+        magnifyingGlassCanvas.height
+      );
+
+      // Draw a portion of the main canvas onto the magnifying glass canvas
+      magnifyingGlassCtx.drawImage(
+        document.getElementsByClassName("lower-canvas")[upper_id],
+        event.layerX - 40,
+        event.layerY - 40,
+        80,
+        80,
+        0,
+        0,
+        magnifyingGlassCanvas.width,
+        magnifyingGlassCanvas.height
+      );
+
+      // Set the position of the magnifying glass to follow the mouse cursor
+      magnifyingGlassCanvas.style.left = x + 10 + "px";
+      magnifyingGlassCanvas.style.top = y + 10 + "px";
+
+      magnifyingGlassCtx.beginPath();
+      magnifyingGlassCtx.moveTo(
+        magnifyingGlassCanvas.width / 2,
+        magnifyingGlassCanvas.height / 2 - crossHairSzie / 2
+      );
+      magnifyingGlassCtx.lineTo(
+        magnifyingGlassCanvas.width / 2,
+        magnifyingGlassCanvas.height / 2 + crossHairSzie / 2
+      );
+      magnifyingGlassCtx.moveTo(
+        magnifyingGlassCanvas.width / 2 - crossHairSzie / 2,
+        magnifyingGlassCanvas.height / 2
+      );
+      magnifyingGlassCtx.lineTo(
+        magnifyingGlassCanvas.width / 2 + crossHairSzie / 2,
+        magnifyingGlassCanvas.height / 2
+      );
+      magnifyingGlassCtx.strokeStyle = "red";
+      magnifyingGlassCtx.stroke();
+    });
+  };
+  this.destroy_zoom = function () {
+    var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
+    magnifyingGlassCanvas.remove();
+    // remove listeners
   };
 
   this.init_img = function () {
@@ -476,34 +458,6 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         this._active_polygon._polygon_color
       );
     }
-  };
-
-  this.load_anotation_if_exist = function (product_id) {
-    var at = this;
-    // $.ajax({
-    //     type: "GET",
-    //     url: "http://xxx",      // 91.121.77.14:5000/dataset_segmentation_store&prodict_id=" + product_id
-    //     context: document.body
-    // }).done(function (data) {
-    //     data_obj = JSON.parse(data);
-    //     console.log(data_obj);
-    //     for (var i = 0; i < data_obj.dict.length; i += 1) {
-    //         var anot_class = data_obj.dict[i];
-    //         var class_id = anot_class.class_id;
-    //         var list_polyg = anot_class.values;
-    //         for (var component_id = 0; component_id < list_polyg.length; component_id += 1) {
-    //             var polygon_id = class_id + component_id * max_clases;
-    //             at._polygons[polygon_id] = new AnotationPolygon(at, polygon_id, colors[class_id]);
-    //             var list_pts = list_polyg[component_id];
-    //             for (var p_id = 0; p_id < list_pts.length; p_id += 2) {
-    //                 at._polygons[polygon_id]._points.push({ x: list_pts[p_id], y: list_pts[p_id + 1] });
-    //                 at._polygons[polygon_id]._points_order.push(Math.round(p_id / 2));
-    //             }
-    //         }
-
-    //     }
-
-    // });
   };
 
   this.get_annotation_obj = function (product_id) {
