@@ -31,6 +31,27 @@
 
         const url = "http://147.32.71.74:443/api/insert_annotation"
 
+        function setActiveAnnot(id) {
+            if (anotation_tool != null) {
+                anotation_tool.setActive(id===1);
+            }
+            if (satellite_tool != null) {
+                satellite_tool.setActive(id===0);
+            }
+            if (id===1) {
+                container = document.getElementById("canvas_main");
+                container.style.border = "2px solid black";
+                container = document.getElementById("canvas_sec");
+                container.style.border = "0px solid black";
+            } else {
+                container = document.getElementById("canvas_main");
+                container.style.border = "0px solid black";
+                container = document.getElementById("canvas_sec");
+                container.style.border = "2px solid black";
+            }
+
+        }
+
         function sendToCanvas(index) {
             console.log(imagesArray[index])
             active_img = imagesArray[index]
@@ -338,11 +359,11 @@
               
         </div>
         <div class="canvases">
-            <div id="canvas_main">
+            <div id="canvas_main" onclick=setActiveAnnot(1)>
                 <canvas id="canvas_img" style="border:1px solid black;"></canvas>
             </div>
 
-            <div id="canvas_sec">
+            <div id="canvas_sec" onclick=setActiveAnnot(0)>
                 <canvas id="canvas_sat" style="border:1px solid black;"></canvas>
             </div>
 
@@ -360,11 +381,12 @@
     <h3>Anotation steps</h3>
     <p>1) Select the class</p>
     <p>2) Anotate the object on the image</p>
-    <p>2a) After start editing controll points, new controll points are added to closest line segment</p>
+    <p>2a) After start editing control points, new controll points are added to closest line segment</p>
     <p>2b) You can delete the points by Backspace or Delete in the order they were added</p>
     <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
     <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
     <p>5) Switch between classes by pressing "Tab" on keyboard</p>
+    <p>5) Switch corner numbers using left and right arrow</p>
 
     </div>
 

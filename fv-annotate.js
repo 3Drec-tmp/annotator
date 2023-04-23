@@ -39,7 +39,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
   this._points = [];
   this._labels = [];
   this._label_objects = [];
-  this._last_label = 0;
+  this._next_label = 1;
   this._points_order = [];
   this._anotation_canvas = anotation_canvas;
   this._polygon_id = polygon_id;
@@ -82,12 +82,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
   };
 
   this.add_label = function (coords) {
-    var label = this._last_label + 1;
-    console.log(label);
-    this._labels.push(label);
-    this._last_label = label;
-
-    const pointLabel = new fabric.Text(label.toString(), {
+    const pointLabel = new fabric.Text(this._next_label.toString(), {
       left: coords.x,
       top: coords.y,
       textAlign: "center",
@@ -97,8 +92,11 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
       stroke: "white",
       strokeWidth: 0.2,
     });
+    this._labels.push(this._next_label);
     this._label_objects.push(pointLabel);
     this._anotation_canvas._canvas.add(pointLabel);
+
+    this._next_label += 1;
   };
 
   this.pt_line_segment_dist = function (newpt, pt1, pt2) {
@@ -147,7 +145,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
       this._anotation_canvas._canvas.remove(labelObject);
       this._labels.splice(last_pt_id, 1);
       this._label_objects.splice(last_pt_id, 1);
-      this._last_label -= 1;
+      this._next_label -= 1;
       if (this._points.length < 2) {
         this._status = 0;
       }
@@ -167,10 +165,15 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   this._active_polygon = null;
   this._original_img_shape = null;
   this._zoom_canvas_id = zoom_canvas_id;
+  this._active = 0;
   console.log("zoom_canvas_id: " + zoom_canvas_id);
 
   this.isEmpty = function () {
     return this._polygons.length == 0;
+  };
+
+  this.setActive = (a) => {
+    this._active = a;
   };
 
   this.changeActivePolygon = function (polygon_id) {
@@ -200,6 +203,9 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
 
     // keyboard listening
     document.addEventListener("keydown", function (event) {
+      if (!at._active) {
+        return;
+      }
       if (event.key == "Backspace" || event.key == "Delete") {
         if (at._active_polygon != null) {
           at._active_polygon.removeLastPoint();
@@ -222,10 +228,10 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         event.preventDefault();
       }
       if (event.key == "ArrowRight") {
-        at._active_polygon._last_label += 1;
+        at._active_polygon._next_label += 1;
       }
       if (event.key == "ArrowLeft") {
-        at._active_polygon._last_label -= 1;
+        at._active_polygon._next_label -= 1;
       }
     });
   };
@@ -349,6 +355,13 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       return;
     }
 
+    if (
+      this._active_polygon._labels.includes(this._active_polygon._next_label)
+    ) {
+      alert("The corner label is already used.");
+      return;
+    }
+
     var p = this._active_polygon;
     if (e.target != null && !modified) {
       var pt = { x: e.pointer.x, y: e.pointer.y };
@@ -371,6 +384,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         }
         if (min_dist_id == p._points.length) {
           p._points.push(pt);
+          p.add_label(pt);
           p._points_order.push(p._points.length);
         } else {
           var tmp_pt;
@@ -389,7 +403,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         }
       } else {
         p._points.push(pt);
-
+        p._status = p._points.length > 2 ? 1 : 0;
         p.add_label(pt);
       }
       Edit(this._canvas, p._polygon);
