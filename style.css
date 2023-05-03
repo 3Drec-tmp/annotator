@@ -21,21 +21,21 @@ body{
 
 .content {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 }
 
 .navigation {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     margin-right: 10px;
     /* background: #d4fce7; */
     border-radius: 20px;
     padding: 1rem;
-    width: 250px;
+    width: 100vw;
 }
 
 .image-list {
-    height: 360px;
+    width: 320px;
     
 }
 
@@ -43,7 +43,7 @@ body{
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
-    height: 260px;
+    height: 80px;
 }
 
 .overlay {
@@ -114,10 +114,30 @@ body{
     justify-content: start; 
     align-items: center;
     cursor: pointer;
-    padding: 4px;
+    padding: 3px;
 }
 
 .classes_cont input[type="radio"]:checked+label {
     border: 1px solid #000;
     border-radius: 10px;
+}
+
+.annotations {
+    display: flex;
+    flex-direction: column;
+    margin-left: 2rem;
+}
+
+.sat {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin-left: 2rem;
+}
+
+.fin {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin-left: 2rem;
 }

@@ -1,7 +1,8 @@
-var colors = ["red", "blue", "green", "silver", "yellow"];
+var colors = ["green", "blue", "purple", "yellow", "other"];
 var modified = false;
 var delete_polygon_key = 0;
-var max_clases = 100;
+var max_clases = 5;
+var canvas_width = 900;
 
 function pt_pt_dis(pt1, pt2) {
   return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
@@ -51,7 +52,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
       left: 0,
       top: 0,
       scale: 1,
-      opacity: 0.5,
+      opacity: 0.3,
       fill: this._polygon_color,
       strokeWidth: 2,
       stroke: this._polygon_color,
@@ -68,6 +69,11 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
     this._polygon.selectable = false;
   };
 
+  this.refresh_active_label = function () {
+    document.getElementById("poly_label").innerHTML =
+      this._next_label.toString();
+  };
+
   this.pt_pt_dis = function (pt1, pt2) {
     return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
   };
@@ -81,20 +87,37 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
     );
   };
 
-  this.add_label = function (coords) {
-    const pointLabel = new fabric.Text(this._next_label.toString(), {
-      left: coords.x,
-      top: coords.y,
-      textAlign: "center",
-      fontSize: 15,
-      fontWeight: "bold",
-      fill: "black",
-      stroke: "white",
-      strokeWidth: 0.2,
-    });
-    this._labels.push(this._next_label);
-    this._label_objects.push(pointLabel);
+  this.add_label = function (coords, idx) {
+    const pointLabel = new fabric.Text(
+      this._polygon_id + this._next_label.toString(),
+      {
+        left: coords.x,
+        top: coords.y,
+        textAlign: "center",
+        fontSize: 15,
+        fontWeight: "bold",
+        fill: "black",
+        stroke: "white",
+        strokeWidth: 0.2,
+      }
+    );
+    pointLabel.lockMovementX = true;
+    pointLabel.lockMovementY = true;
+    pointLabel.lockScalingX = true;
+    pointLabel.lockScalingY = true;
+    pointLabel.lockRotation = true;
+    pointLabel.selectable = false;
+    pointLabel.hoverCursor = "default";
+
     this._anotation_canvas._canvas.add(pointLabel);
+
+    if (idx == -1) {
+      this._labels.push(this._next_label);
+      this._label_objects.push(pointLabel);
+    } else {
+      this._labels.splice(idx, 0, this._next_label);
+      this._label_objects.splice(idx, 0, pointLabel);
+    }
 
     this._next_label += 1;
   };
@@ -126,7 +149,6 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
         if (last_pt_order < this._points_order[i]) {
           last_pt_order = this._points_order[i];
           last_pt_id = i;
-          console.log("aaa");
         }
       }
       this._points.splice(last_pt_id, 1);
@@ -134,13 +156,11 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
       Edit(this._anotation_canvas._canvas, this._polygon);
 
       console.log("last_pt_id", last_pt_id, "last_pt_order", last_pt_order);
-      console.log(this._points);
-      console.log(this._labels);
+      console.log("removing");
 
       var lab_id =
         last_pt_id === -1 ? this._label_objects.length - 1 : last_pt_id;
       var labelObject = this._label_objects[lab_id];
-      console.log(labelObject);
 
       this._anotation_canvas._canvas.remove(labelObject);
       this._labels.splice(last_pt_id, 1);
@@ -149,6 +169,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
       if (this._points.length < 2) {
         this._status = 0;
       }
+      this.refresh_active_label();
     }
   };
 }
@@ -159,6 +180,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   this._img_id = null;
   this._img = null;
   this._img_path = img_path;
+  canvas_width = img_width;
   this._img_width = img_width;
   this._scale = null;
   this._polygons = [];
@@ -166,7 +188,6 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   this._original_img_shape = null;
   this._zoom_canvas_id = zoom_canvas_id;
   this._active = 0;
-  console.log("zoom_canvas_id: " + zoom_canvas_id);
 
   this.isEmpty = function () {
     return this._polygons.length == 0;
@@ -229,9 +250,13 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       }
       if (event.key == "ArrowRight") {
         at._active_polygon._next_label += 1;
+        at._active_polygon.refresh_active_label();
       }
       if (event.key == "ArrowLeft") {
-        at._active_polygon._next_label -= 1;
+        if (at._active_polygon._next_label > 1) {
+          at._active_polygon._next_label -= 1;
+          at._active_polygon.refresh_active_label();
+        }
       }
     });
   };
@@ -239,14 +264,12 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   // init magnifier canvas
   this.init_zoom = function () {
     /// Get the main canvas element
-
+    console.log(this); /// PROBLEM WITH THE WINDOW IS, that lower_canvas has wrong scale.
     var upper_id = this._zoom_canvas_id === "zoom_main_win" ? 0 : 1;
-    console.log("upper_id: " + upper_id);
     var mainCanvas = document.getElementsByClassName("upper-canvas")[upper_id];
 
     // Create a new canvas element for the magnifying glass
     var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
-    console.log("magnifyingGlassCanvas: " + magnifyingGlassCanvas);
     magnifyingGlassCanvas.id = "magnifyingGlassCanvas";
     magnifyingGlassCanvas.width = 200; // Set the width of the magnifying glass
     magnifyingGlassCanvas.height = 200; // Set the height of the magnifying glass
@@ -282,12 +305,14 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       );
 
       // Draw a portion of the main canvas onto the magnifying glass canvas
+
+      scale = event.originalTarget.width / canvas_width;
       magnifyingGlassCtx.drawImage(
         document.getElementsByClassName("lower-canvas")[upper_id],
-        event.layerX - 40,
-        event.layerY - 40,
-        80,
-        80,
+        event.layerX * scale - 30,
+        event.layerY * scale - 30,
+        60,
+        60,
         0,
         0,
         magnifyingGlassCanvas.width,
@@ -346,6 +371,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       at._img.scale(at._scale);
       at._canvas.setWidth(at._scale * at._img.width);
       at._canvas.setHeight(at._scale * at._img.height);
+      console.log(at._canvas);
     });
   };
 
@@ -384,9 +410,12 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         }
         if (min_dist_id == p._points.length) {
           p._points.push(pt);
-          p.add_label(pt);
+          p.add_label(pt, -1);
           p._points_order.push(p._points.length);
         } else {
+          console.log(min_dist_id);
+
+          p.add_label(pt, min_dist_id);
           var tmp_pt;
           var tmp_pt_order;
           var pt_order = p._points.length;
@@ -404,9 +433,10 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       } else {
         p._points.push(pt);
         p._status = p._points.length > 2 ? 1 : 0;
-        p.add_label(pt);
+        p.add_label(pt, -1);
       }
-      Edit(this._canvas, p._polygon);
+      Edit(this._canvas, p._polygon, p._label_objects);
+      this._active_polygon.refresh_active_label();
     }
     modified = false;
   };
@@ -422,6 +452,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         this._polygons[polygon_id].init();
       }
       this._active_polygon = this._polygons[polygon_id];
+      this._active_polygon.refresh_active_label();
       if (this._active_polygon._points.length > 3) {
         this._active_polygon._status = 1;
       } else {
@@ -451,6 +482,13 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     if (polygon != null && polygon != undefined) {
       this._polygons[polygon._polygon_id] = undefined;
       this._canvas.remove(polygon._polygon);
+
+      // loop over all labels in the given polygon
+      for (var i = 0; i < polygon._label_objects.length; i += 1) {
+        var labelObject = polygon._label_objects[i];
+        polygon._anotation_canvas._canvas.remove(labelObject);
+      }
+
       if (polygon._polygon_id < max_clases) {
         this.set_active(polygon._polygon_id, polygon._polygon_color);
       } else {
@@ -458,6 +496,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
           polygon._polygon_id - max_clases,
           polygon._polygon_color
         );
+        this._active_polygon.refresh_active_label();
       }
     }
   };
@@ -488,6 +527,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       this._active_polygon._polygon_id + component_id * max_clases,
       this._active_polygon._polygon_color
     );
+    this._active_polygon.refresh_active_label();
   };
 
   this.change_active_polygon_in_class = function () {
@@ -515,6 +555,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         this._active_polygon._polygon_color
       );
     }
+    this._active_polygon.refresh_active_label();
   };
 
   this.get_annotation_obj = function (product_id) {
@@ -603,13 +644,14 @@ function anchorWrapper(anchorIndex, fn) {
   };
 }
 
-function Edit(canvas, poly) {
+function Edit(canvas, poly, labels) {
   canvas.setActiveObject(poly);
   poly.edit = true;
   var lastControl = poly.points.length - 1;
   poly.cornerStyle = "circle";
   poly.cornerColor = "rgba(0,0,255,0.5)";
   poly.controls = poly.points.reduce(function (acc, point, index) {
+    // console.log(acc, point, index);
     acc["p" + index] = new fabric.Control({
       positionHandler: polygonPositionHandler,
       actionHandler: anchorWrapper(

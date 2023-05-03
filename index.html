@@ -64,12 +64,12 @@
             containerz.innerHTML = `<canvas id="zoom_main_win" width="200" height="200" ></canvas>
 `
 
-            anotation_tool = new AnotationCanvas('canvas_img', "zoom_main_win" , URL.createObjectURL(imagesArray[index]), 820);
+            anotation_tool = new AnotationCanvas('canvas_img', "zoom_main_win" , URL.createObjectURL(imagesArray[index]), 900);
             anotation_tool.init(active_polygon_id);
             anotation_tool.init_zoom();
 
             if (satellite_tool != null) {
-                if (!confirm('Does the loaded satellite image match?')) {
+                if (!confirm('Does the loaded satellite image match with the new img?')) {
                     requestSat();
                 }   
             }
@@ -97,6 +97,10 @@
                             </div>`
             })
             output.innerHTML = images
+            
+            if (anotation_tool == null) {
+                sendToCanvas(0)
+            }
         }
 
         function pixelToLatLon(zoomLevel, startLat, startLon, dxPixels, dyPixels) {
@@ -319,41 +323,43 @@
 
     <div class="content">
         <div class="navigation">
-                <h5>Image loading</h5>
+            
                 <div class="form-group">
-                    <label for="file-selector">Select image:</label>
+                    <label for="file-selector">Load images</label>
                     <input type="file" multiple id="file-selector" name="file-selector" accept="image/*">
                 </div>
                 
-                <p> To open image in canvas, click on  its name.</p>
                 <div class="image-list-content">
-                    
+                    <p><i>No loaded images yet.</i></p>
                 </div>
 
-                <h5>Annotation class</h5>
-                <div class="classes_cont">
-                    <input id=anot_class_1 name=classradios type=radio checked><label for=anot_class_1 onclick=setActivePolygon(0)> <div class="radio-label"> <p>Roof</p><div style="background-color:red;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_2 name=classradios type=radio><label for=anot_class_2 onclick=setActivePolygon(1)> <div class="radio-label"> <p>Window</p><div style="background-color:blue;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_3 name=classradios type=radio><label for=anot_class_3 onclick=setActivePolygon(2)> <div class="radio-label"> <p>Door</p><div style="background-color:green;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_4 name=classradios type=radio><label for=anot_class_4 onclick=setActivePolygon(3)> <div class="radio-label"> <p>Chimney</p><div style="background-color:yellow;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-                    <input id=anot_class_5 name=classradios type=radio><label for=anot_class_5 onclick=setActivePolygon(4)> <div class="radio-label"> <p>Other</p><div style="background-color:purple;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
-            
+                <div class="annotations">
+                    <label>Annotation class</label>
+                    <div class="classes_cont">
+                        <input id=anot_class_1 name=classradios type=radio checked><label for=anot_class_1 onclick=setActivePolygon(0)> <div class="radio-label"> <p>Roof</p><div style="background-color:green;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                        <input id=anot_class_2 name=classradios type=radio><label for=anot_class_2 onclick=setActivePolygon(1)> <div class="radio-label"> <p>Window</p><div style="background-color:blue;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                        <input id=anot_class_3 name=classradios type=radio><label for=anot_class_3 onclick=setActivePolygon(2)> <div class="radio-label"> <p>Door</p><div style="background-color:purple;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                        <input id=anot_class_4 name=classradios type=radio><label for=anot_class_4 onclick=setActivePolygon(3)> <div class="radio-label"> <p>Chimney</p><div style="background-color:yellow;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                        <input id=anot_class_5 name=classradios type=radio><label for=anot_class_5 onclick=setActivePolygon(4)> <div class="radio-label"> <p>Other</p><div style="background-color:red;height:20px;width:20px;border-radius: 100px;"></div> </div></label>
+                    </div>
+                </div>
+                <div class="info">
+                    <div>
+                        <label>Active label</label>
+                        <p id="poly_label"></p>
+                    </div>
                 </div>
                 <div class="sat">
-                    <h5>Satellite image req.</h5>
-                    <p>Request new satellite image corresponding to the image on canvas</p>
-                    <button type="button" class="btn btn-primary" onclick=requestSat()>
+                    <label>Get Satellite image</label>
+                    <button type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="bottom" title="Request new satellite image corresponding to the image on canvas" onclick=requestSat()>
                         Get image
                     </button>
                 </div>
                 <div class="fin">
-                    <h4>Finished image</h4>
-                    <p>If this annotation pair of your and sat. image is finished, you can send it.</p>
-                    <div id="send_button">
-                        <button type="button" class="btn btn-dark" onclick=sendAnnot()>
-                            Send annotation
-                        </button>
-                    </div>
+                    <label>Finish image pair</label>
+                    <button type="button" class="btn btn-dark" data-toggle="tooltip" data-placement="bottom" title="If this annotation pair of your and sat. image is finished, you can send it" onclick=sendAnnot()>
+                        Send annotation
+                    </button>
                 </div>
 
               
@@ -386,7 +392,7 @@
     <p>3) You can add -> press "a" letter, a new polygon of the same class</p>
     <p>4) You can delete -> press two times "d" letter (to prevent unwanted delete) the active polygon of active class</p>
     <p>5) Switch between classes by pressing "Tab" on keyboard</p>
-    <p>5) Switch corner numbers using left and right arrow</p>
+    <p>6) Switch corner numbers using left and right arrow</p>
 
     </div>
 
