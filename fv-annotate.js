@@ -201,6 +201,8 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
 
   this.setActive = (a) => {
     this._active = a;
+    this._active_polygon.refresh_active_mode();
+    this._active_polygon.refresh_active_label();
   };
 
   this.changeActivePolygon = function (polygon_id) {
@@ -240,7 +242,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       }
       if (event.key == "a") {
         at.add_polygon();
-        at.refresh_active_mode();
+        at._active_polygon.refresh_active_mode();
       }
       if (event.key == "d") {
         setTimeout(function () {
@@ -253,7 +255,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       }
       if (event.key == "Tab") {
         at.change_active_polygon_in_class();
-        at.refresh_active_mode();
+        at._active_polygon.refresh_active_mode();
         event.preventDefault();
       }
       if (event.key == "ArrowRight") {
@@ -267,8 +269,8 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         }
       }
       if (event.key == "m") {
-        at._status = !at._status;
-        at.refresh_active_mode();
+        at._active_polygon._status = !at._active_polygon._status;
+        at._active_polygon.refresh_active_mode();
       }
     });
   };
