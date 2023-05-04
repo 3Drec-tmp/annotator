@@ -206,7 +206,7 @@
     `
                 let satUrl = URL.createObjectURL(data);
                 console.log(satUrl)
-                satellite_tool = new AnotationCanvas('canvas_sat', 'zoom_sec_win' ,satUrl, 820);
+                satellite_tool = new AnotationCanvas('canvas_sat', 'zoom_sec_win' ,satUrl, 450);
                 satellite_tool.init(active_polygon_id);
                 satellite_tool.init_zoom();
                 active_sat_img_name = new_coords.toString()+"_20.jpg"
