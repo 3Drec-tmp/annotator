@@ -67,11 +67,17 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
     this._polygon.hoverCursor = "default";
     this._polygon.parent = this;
     this._polygon.selectable = false;
+    this.refresh_active_mode();
   };
 
   this.refresh_active_label = function () {
     document.getElementById("poly_label").innerHTML =
       this._next_label.toString();
+  };
+
+  this.refresh_active_mode = function () {
+    document.getElementById("mode").innerHTML =
+      this._status == 0 ? "add" : "edit";
   };
 
   this.pt_pt_dis = function (pt1, pt2) {
@@ -234,6 +240,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       }
       if (event.key == "a") {
         at.add_polygon();
+        at.refresh_active_mode();
       }
       if (event.key == "d") {
         setTimeout(function () {
@@ -246,6 +253,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       }
       if (event.key == "Tab") {
         at.change_active_polygon_in_class();
+        at.refresh_active_mode();
         event.preventDefault();
       }
       if (event.key == "ArrowRight") {
@@ -260,8 +268,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       }
       if (event.key == "m") {
         at._status = !at._status;
-        document.getElementById("mode").innerHTML =
-          at._status == 0 ? "add" : "edit";
+        at.refresh_active_mode();
       }
     });
   };
