@@ -141,3 +141,10 @@ body{
     justify-content: space-around;
     margin-left: 2rem;
 }
+
+.info { 
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    margin-left: 2rem;
+}

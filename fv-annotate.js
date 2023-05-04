@@ -258,6 +258,11 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
           at._active_polygon.refresh_active_label();
         }
       }
+      if (event.key == "m") {
+        at._status = !at._status;
+        document.getElementById("mode").innerHTML =
+          at._status == 0 ? "add" : "edit";
+      }
     });
   };
 
@@ -432,7 +437,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         }
       } else {
         p._points.push(pt);
-        p._status = p._points.length > 2 ? 1 : 0;
+        // p._status = p._points.length > 2 ? 1 : 0;
         p.add_label(pt, -1);
       }
       Edit(this._canvas, p._polygon, p._label_objects);
