@@ -1,4 +1,4 @@
-var colors = ["green", "blue", "purple", "yellow", "other"];
+var colors = ["green", "blue", "purple", "yellow", "red"];
 var modified = false;
 var delete_polygon_key = 0;
 var max_clases = 5;
@@ -405,13 +405,13 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     var p = this._active_polygon;
     if (e.target != null && !modified) {
       var pt = { x: e.pointer.x, y: e.pointer.y };
+      var min_dist_id = p._points.length;
       if (p._status > 0) {
         var min_dist = p.pt_line_segment_dist(
           pt,
           p._points[p._points.length - 1],
           p._points[0]
         );
-        var min_dist_id = p._points.length;
         for (var i = 0; i < p._points.length - 1; i += 1) {
           var dist = pt_line_segment_dist(pt, p._points[i], p._points[i + 1]);
           if (
@@ -422,37 +422,17 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
             min_dist_id = i + 1;
           }
         }
-        if (min_dist_id == p._points.length) {
-          p._points.push(pt);
-          p.add_label(pt, -1);
-          p._points_order.push(p._points.length);
-        } else {
-          console.log(min_dist_id);
-
-          p.add_label(pt, min_dist_id);
-          var tmp_pt;
-          var tmp_pt_order;
-          var pt_order = p._points.length;
-          for (var i = min_dist_id; i < p._points.length; i += 1) {
-            tmp_pt = p._points[i];
-            p._points[i] = pt;
-            pt = tmp_pt;
-
-            tmp_pt_order = p._points_order[i];
-            p._points_order[i] = pt_order;
-            pt_order = tmp_pt_order;
-          }
-          p._points[p._points.length] = pt;
-        }
-      } else {
-        p._points.push(pt);
-        // p._status = p._points.length > 2 ? 1 : 0;
-        p.add_label(pt, -1);
       }
+
+      p._points.splice(min_dist_id, 0, pt);
+      p._points_order.splice(min_dist_id, 0, p._points.length);
+      p.add_label(pt, min_dist_id);
+
       Edit(this._canvas, p._polygon, p._label_objects);
       this._active_polygon.refresh_active_label();
     }
     modified = false;
+    console.log(p._points_order);
   };
 
   this.set_active = function (polygon_id, polygon_color) {
