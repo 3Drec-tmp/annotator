@@ -1,0 +1,6 @@
+headers:
+  content-security-policy:
+    - "default-src 'self'"
+    - "script-src 'self' 'unsafe-inline'"
+    - "img-src 'self' data:"
+    - "connect-src 'self' http://147.32.71.74:443"
