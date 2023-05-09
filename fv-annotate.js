@@ -148,7 +148,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
   };
 
   this.removeLastPoint = function () {
-    if (this._points.length > 0) {
+    if (this._points.length > 1) {
       var last_pt_id = -1;
       var last_pt_order = -1;
       for (var i = 0; i < this._points_order.length; i += 1) {
@@ -362,10 +362,6 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   };
 
   this.destroy = function () {
-    var upper_id = this._zoom_canvas_id === "zoom_main_win" ? 0 : 1;
-    var mainCanvas = document.getElementsByClassName("upper-canvas")[upper_id];
-    console.log(mainCanvas);
-    document.removeChild(mainCanvas);
     // remove listeners
   };
 
@@ -406,7 +402,6 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
 
     var p = this._active_polygon;
     if (e.target != null && !modified) {
-      console.log(e);
       var pt = { x: e.pointer.x, y: e.pointer.y };
       var min_dist_id = p._points.length;
       if (p._status > 0) {
@@ -486,14 +481,17 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       }
 
       var i = this._active_polygon._polygon_id + max_clases;
+      if (i >= this._polygons.length) {
+        i = this._active_polygon._polygon_id % max_clases;
+      }
       while (i != this._active_polygon._polygon_id) {
-        if (i >= this._polygons.length) {
-          i = this._active_polygon._polygon_id % max_clases;
-        }
         if (this._polygons[i] != undefined) {
           break;
         } else {
           i += max_clases;
+        }
+        if (i >= this._polygons.length) {
+          i = this._active_polygon._polygon_id % max_clases;
         }
       }
       if (i == this._active_polygon._polygon_id) {
@@ -578,26 +576,20 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     this._active_polygon.refresh_active_label();
   };
 
-  this.get_annotation_obj = function (product_id) {
-    /// TODO !! == Make more efective
-    var data_obj = {
-      product_id: product_id,
-      dict: [],
-    };
-    for (var i = 0; i < max_clases; i += 1) {
-      var class_anotations = [];
-      var component_id = 0;
-      while (this._polygons[i + component_id * max_clases] != undefined) {
-        var pts = this._polygons[i + component_id * max_clases]._points;
-        var pts_uv = [];
-        for (var j = 0; j < pts.length; j += 1) {
-          pts_uv.push(pts[j].x / this._scale);
-          pts_uv.push(pts[j].y / this._scale);
-        }
-        class_anotations.push(pts_uv);
-        component_id += 1;
+  this.get_annotation_obj = function () {
+    var data_obj = {};
+    for (var i = 0; i < this._polygons.length; i += 1) {
+      if (this._polygons[i] == undefined) {
+        continue;
       }
-      data_obj.dict.push({ class_id: i, values: class_anotations });
+      var pts = this._polygons[i]._points;
+      var lbs = this._polygons[i]._labels;
+      var id = this._polygons[i]._polygon_id;
+      var pts_luv = [];
+      for (var j = 0; j < pts.length; j += 1) {
+        pts_luv.push([lbs[j], pts[j].x / this._scale, pts[j].y / this._scale]);
+      }
+      data_obj[id] = pts_luv;
     }
 
     return JSON.stringify(data_obj);

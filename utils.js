@@ -48,11 +48,11 @@ function sendToCanvas(index) {
   anotation_tool.init(active_polygon_id);
   anotation_tool.init_zoom();
 
-  if (satellite_tool != null) {
-    if (!confirm("Does the loaded satellite image match with the new img?")) {
-      requestSat();
-    }
-  }
+  //   if (satellite_tool != null) {
+  //     if (!confirm("Does the loaded satellite image match with the new img?")) {
+  //       requestSat();
+  //     }
+  //   }
 }
 
 function setActivePolygon(index) {
@@ -87,8 +87,6 @@ function pixelToLatLon(zoomLevel, startLat, startLon, dxPixels, dyPixels) {
   const spatialResolution =
     (156543.03392 * Math.cos((startLat * Math.PI) / 180)) /
     Math.pow(2, zoomLevel);
-
-  console.log(spatialResolution);
   const earthRadius = 6378137; // Earth's radius in meters (approximate)
 
   const dxMeters = dxPixels * spatialResolution;
@@ -107,7 +105,6 @@ function pixelToLatLon(zoomLevel, startLat, startLon, dxPixels, dyPixels) {
 }
 
 function deleteImage(index) {
-  console.log(index);
   imagesArray.splice(index, 1);
 
   imageList = document.getElementsByClassName("image-list-content")[0];
@@ -130,7 +127,6 @@ function requestSat() {
 
   EXIF.getData(active_img, function () {
     var MetaData = EXIF.getAllTags(this);
-    console.log(JSON.stringify(MetaData, null, "\t"));
     if (!("GPSLatitude" in MetaData) || !("GPSLongitude" in MetaData)) {
       alert("No location data found, cant get the satellite image.");
       return;
@@ -172,14 +168,12 @@ function sendSatRequest(data, success_fun) {
     },
     success: success_fun,
     error: function (data) {
-      console.log(data);
       alert("Error occured, try again");
     },
   });
 }
 
 function requestZoomed(new_coords) {
-  console.log();
   data = {
     lat: new_coords[0],
     lon: new_coords[1],
@@ -226,8 +220,6 @@ function requestDist(coords) {
     var img = document.getElementById("img");
     img.src = URL.createObjectURL(data);
     $("#img").on("click", (event) => {
-      console.log(event);
-      console.log(this);
       var dx = event.originalEvent.layerX - event.target.width / 2;
       var dy = event.target.width / 2 - event.originalEvent.layerY;
       new_coords = pixelToLatLon(19, coords[0], coords[1], dx, dy);
@@ -263,7 +255,6 @@ function sendAnnot() {
     formData.append("img_sat_name", active_sat_img_name);
 
     console.log(formData);
-    console.log("sending annot");
     fetch(url, {
       method: "POST",
       body: formData,
@@ -295,7 +286,7 @@ function sendAnnot() {
     container.innerHTML = `<canvas id="canvas_img" style="border:1px solid black;"></canvas>`;
     if (imagesArray.length > 0) {
       active_img = imagesArray[0];
-      sendToCanvas(active_img);
+      sendToCanvas(0);
     }
   }
 }
