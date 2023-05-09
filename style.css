@@ -27,11 +27,11 @@ body{
 .navigation {
     display: flex;
     flex-direction: row;
-    margin-right: 10px;
-    /* background: #d4fce7; */
+    background: #e0e7e3;
     border-radius: 20px;
     padding: 1rem;
     width: 100vw;
+    margin-bottom:5px;;
 }
 
 .image-list {

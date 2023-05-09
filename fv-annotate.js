@@ -49,8 +49,8 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
 
   this.init = function () {
     this._polygon = new fabric.Polygon(this._points, {
-      left: 0,
-      top: 0,
+      left: -1,
+      top: -1,
       scale: 1,
       opacity: 0.3,
       fill: this._polygon_color,
@@ -58,7 +58,7 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
       stroke: this._polygon_color,
       objectCaching: false,
       transparentCorners: true,
-      cornerSize: 7,
+      cornerSize: 6,
     });
     this._anotation_canvas._canvas.add(this._polygon);
     this._polygon.lockMovementX = true;
@@ -100,11 +100,11 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
         left: coords.x,
         top: coords.y,
         textAlign: "center",
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: "bold",
         fill: "black",
         stroke: "white",
-        strokeWidth: 0.2,
+        strokeWidth: 0.4,
       }
     );
     pointLabel.lockMovementX = true;
@@ -161,9 +161,6 @@ function AnotationPolygon(anotation_canvas, polygon_id, polygon_color) {
       this._points_order.splice(last_pt_id, 1);
       Edit(this._anotation_canvas._canvas, this._polygon);
 
-      console.log("last_pt_id", last_pt_id, "last_pt_order", last_pt_order);
-      console.log("removing");
-
       var lab_id =
         last_pt_id === -1 ? this._label_objects.length - 1 : last_pt_id;
       var labelObject = this._label_objects[lab_id];
@@ -190,6 +187,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   this._img_width = img_width;
   this._scale = null;
   this._polygons = [];
+  this._polygons2 = [[], [], [], [], []]; // one array for each polygon class
   this._active_polygon = null;
   this._original_img_shape = null;
   this._zoom_canvas_id = zoom_canvas_id;
@@ -238,6 +236,9 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       if (event.key == "Backspace" || event.key == "Delete") {
         if (at._active_polygon != null) {
           at._active_polygon.removeLastPoint();
+          if (at._active_polygon._points.length == 0) {
+            at.remove_polygon(at._active_polygon);
+          }
         }
       }
       if (event.key == "a") {
@@ -278,7 +279,6 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
   // init magnifier canvas
   this.init_zoom = function () {
     /// Get the main canvas element
-    console.log(this); /// PROBLEM WITH THE WINDOW IS, that lower_canvas has wrong scale.
     var upper_id = this._zoom_canvas_id === "zoom_main_win" ? 0 : 1;
     var mainCanvas = document.getElementsByClassName("upper-canvas")[upper_id];
 
@@ -302,6 +302,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
 
     // Add an event listener to the main canvas to update the magnifying glass on mousemove
     mainCanvas.addEventListener("mousemove", function (event) {
+      // console.log(event);
       // Get the position of the mouse cursor
       var crossHairSzie = 60;
       var x = event.pageX - this.offsetLeft;
@@ -359,16 +360,17 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
     });
   };
 
-  this.destroy_zoom = function () {
-    var magnifyingGlassCanvas = document.getElementById(this._zoom_canvas_id);
-    magnifyingGlassCanvas.remove();
+  this.destroy = function () {
+    var upper_id = this._zoom_canvas_id === "zoom_main_win" ? 0 : 1;
+    var mainCanvas = document.getElementsByClassName("upper-canvas")[upper_id];
+    console.log(mainCanvas);
+    document.removeChild(mainCanvas);
     // remove listeners
   };
 
   this.init_img = function () {
     var at = this;
     fabric.util.loadImage(this._img_path, function (img) {
-      console.log(img);
       at._img = new fabric.Image(img);
       at._canvas.add(at._img);
       at._canvas.moveTo(at._img, 0);
@@ -385,7 +387,6 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       at._img.scale(at._scale);
       at._canvas.setWidth(at._scale * at._img.width);
       at._canvas.setHeight(at._scale * at._img.height);
-      console.log(at._canvas);
     });
   };
 
@@ -404,6 +405,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
 
     var p = this._active_polygon;
     if (e.target != null && !modified) {
+      console.log(e);
       var pt = { x: e.pointer.x, y: e.pointer.y };
       var min_dist_id = p._points.length;
       if (p._status > 0) {
@@ -432,7 +434,6 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       this._active_polygon.refresh_active_label();
     }
     modified = false;
-    console.log(p._points_order);
   };
 
   this.set_active = function (polygon_id, polygon_color) {
@@ -483,15 +484,22 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         polygon._anotation_canvas._canvas.remove(labelObject);
       }
 
-      if (polygon._polygon_id < max_clases) {
-        this.set_active(polygon._polygon_id, polygon._polygon_color);
-      } else {
-        this.set_active(
-          polygon._polygon_id - max_clases,
-          polygon._polygon_color
-        );
-        this._active_polygon.refresh_active_label();
+      var i = this._active_polygon._polygon_id + max_clases;
+      while (i != this._active_polygon._polygon_id) {
+        if (i >= this._polygons.length) {
+          i = this._active_polygon._polygon_id % max_clases;
+        }
+        if (this._polygons[i] != undefined) {
+          break;
+        } else {
+          i += max_clases;
+        }
       }
+      if (i == this._active_polygon._polygon_id) {
+        i = this._active_polygon._polygon_id % max_clases;
+      }
+      this.set_active(i, this._active_polygon._polygon_color);
+      this._active_polygon.refresh_active_label();
     }
   };
 
@@ -504,10 +512,17 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       return;
     }
     if (this._active_polygon._points.length < 3) {
-      alert(
-        "Current polygon is not valid, i.e., has less than 3 points. Please finish this polygon before starting new component."
-      );
-      return;
+      if (
+        !(
+          this._active_polygon._points.length == 2 &&
+          this._active_polygon._polygon_id % max_clases == 3
+        )
+      ) {
+        alert(
+          "Current polygon is not valid, i.e., has less than 3 points. Please finish this polygon before starting new component."
+        );
+        return;
+      }
     }
     var component_id = 1;
     while (
@@ -533,22 +548,32 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
       return;
     }
     if (this._active_polygon._points.length < 3) {
-      alert(
-        "Current polygon is not valid, i.e., has less than 3 points. Please finish this polygon before switching to another component."
-      );
-      return;
+      if (this._active_polygon._points.length == 0) {
+        this.remove_polygon(this._active_polygon);
+      } else if (
+        !this._active_polygon._points.length == 2 ||
+        !this._active_polygon._polygon_id % max_clases == 3
+      ) {
+        alert(
+          "Current polygon is not valid, i.e., has less than 3 points. Please finish this polygon before starting new component."
+        );
+        return;
+      }
     }
-    if (this._polygons[this._active_polygon._polygon_id + max_clases] != null) {
-      this.set_active(
-        this._active_polygon._polygon_id + max_clases,
-        this._active_polygon._polygon_color
-      );
-    } else {
-      this.set_active(
-        this._active_polygon._polygon_id % max_clases,
-        this._active_polygon._polygon_color
-      );
+
+    var i = this._active_polygon._polygon_id + max_clases;
+    while (i != this._active_polygon._polygon_id) {
+      if (i >= this._polygons.length) {
+        i = this._active_polygon._polygon_id % max_clases;
+      }
+      if (this._polygons[i] != undefined) {
+        break;
+      } else {
+        i += max_clases;
+      }
     }
+
+    this.set_active(i, this._active_polygon._polygon_color);
     this._active_polygon.refresh_active_label();
   };
 
