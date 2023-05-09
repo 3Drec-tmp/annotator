@@ -161,6 +161,7 @@ function sendSatRequest(data, success_fun) {
     CORS: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
+      "Upgrade-Insecure-Requests": "0",
     },
     data: data,
     xhr: function () {
@@ -270,6 +271,7 @@ function sendAnnot() {
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "multipart/form-data",
+        "Upgrade-Insecure-Requests": "0",
       },
     })
       .then((data) => {
