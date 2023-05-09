@@ -234,6 +234,7 @@ function AnotationCanvas(canvas_id, zoom_canvas_id, img_path, img_width) {
         return;
       }
       if (event.key == "Backspace" || event.key == "Delete") {
+        event.preventDefault();
         if (at._active_polygon != null) {
           at._active_polygon.removeLastPoint();
           if (at._active_polygon._points.length == 0) {
