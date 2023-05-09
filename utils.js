@@ -291,6 +291,10 @@ function sendAnnot() {
     container = document.getElementById("canvas_main");
     container.innerHTML = "";
     container.innerHTML = `<canvas id="canvas_img" style="border:1px solid black;"></canvas>`;
+    if (imagesArray.length > 0) {
+      active_img = imagesArray[0];
+      sendToCanvas(active_img);
+    }
   }
 }
 
