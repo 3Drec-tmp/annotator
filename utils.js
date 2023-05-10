@@ -5,7 +5,11 @@ var active_img = null;
 var active_sat_img_name = null;
 var active_polygon_id = 0;
 
-const url = "http://147.32.71.74:443/api/insert_annotation";
+const url_cors = "https://cors-anywhere.herokuapp.com/";
+
+const url_insert = url_cors + "http://147.32.71.74:443/api/insert_annotation";
+const url_request_sat =
+  url_cors + "http://147.32.71.74:443/api/request_satelite_image";
 
 function setActiveAnnot(id) {
   if (anotation_tool != null) {
@@ -152,7 +156,7 @@ function requestSat() {
 
 function sendSatRequest(data, success_fun) {
   $.ajax({
-    url: "http://147.32.71.74:443/api/request_satelite_image",
+    url: url_request_sat,
     type: "GET",
     CORS: true,
     headers: {
@@ -255,7 +259,7 @@ function sendAnnot() {
     formData.append("img_sat_name", active_sat_img_name);
 
     console.log(formData);
-    fetch(url, {
+    fetch(url_insert, {
       method: "POST",
       body: formData,
       CORS: true,
